@@ -1,13 +1,13 @@
-import { makeRedirectUri } from 'expo-auth-session';
+import * as AuthSession from 'expo-auth-session';
 import * as QueryParams from 'expo-auth-session/build/QueryParams';
 import * as WebBrowser from 'expo-web-browser';
 import { supabase } from './supabase';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const redirectTo = makeRedirectUri({
-  scheme: 'microlearningdrip',
-});
+// For Expo Go: generates exp://... URL (add to Supabase Redirect URLs)
+// For production builds: use scheme option for custom URL scheme
+const redirectTo = AuthSession.makeRedirectUri();
 
 export async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({

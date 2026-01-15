@@ -5,7 +5,9 @@ import { supabase } from './supabase';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const redirectTo = makeRedirectUri();
+const redirectTo = makeRedirectUri({
+  scheme: 'microlearningdrip',
+});
 
 export async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({

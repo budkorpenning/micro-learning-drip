@@ -42,6 +42,15 @@ export interface Profile {
   updated_at: string;
 }
 
+export interface Review {
+  id: string;
+  user_id: string;
+  item_id: string;
+  rating: number;
+  interval_days: number;
+  reviewed_at: string;
+}
+
 // Insert types (omit auto-generated fields)
 export interface ItemInsert {
   title: string;
@@ -56,6 +65,14 @@ export interface ScheduleInsert {
   due_at?: string;
   interval_days?: number;
   ease_factor?: number;
+}
+
+export interface ReviewInsert {
+  user_id: string;
+  item_id: string;
+  rating: number;
+  interval_days: number;
+  reviewed_at?: string;
 }
 
 // Supabase Database type for typed client
@@ -76,6 +93,11 @@ export interface Database {
         Row: Profile;
         Insert: { id: string } & Partial<Omit<Profile, 'id' | 'created_at' | 'updated_at'>>;
         Update: Partial<Omit<Profile, 'id' | 'created_at' | 'updated_at'>>;
+      };
+      reviews: {
+        Row: Review;
+        Insert: ReviewInsert;
+        Update: Partial<Omit<ReviewInsert, 'user_id' | 'item_id'>>;
       };
     };
     Views: Record<string, never>;

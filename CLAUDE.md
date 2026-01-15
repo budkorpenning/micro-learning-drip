@@ -61,13 +61,53 @@ Tables:
 
 All tables must enforce user isolation with Supabase RLS.
 
-## Current sprint
-Sprint 01: Foundations
-- Navigation scaffold
-- Supabase client setup
-- Auth (Google via Supabase)
-- Items CRUD
-- RLS sanity checks
+## Progress (as of 2026-01-15)
+
+### Completed
+- [x] Navigation scaffold (4 tabs: Today, Library, Stats, Settings)
+- [x] Supabase client setup with AsyncStorage session persistence
+- [x] Database schema (profiles, items, schedule, reviews, devices) with RLS
+- [x] Security patch: unique schedule per item, WITH CHECK policies, item ownership triggers
+- [x] Google Auth via Supabase (expo-auth-session)
+- [x] Items CRUD (create, list, archive/unarchive) in Library tab
+- [x] Auto-create schedule row when item created (due_at=now, interval=1)
+- [x] Today review loop: show due items, 5-grade rating (Again/Hard/Good/Easy/Perfect)
+- [x] Scheduling logic: pure function in src/lib/scheduling.ts
+- [x] Review persists to reviews table, updates schedule (interval, ease_factor, due_at)
+- [x] Empty state with motivational message + next due item
+
+### Tags
+- v0.1.0: Navigation scaffold complete
+- v0.2.0: Sprint 01 complete (Auth + Items CRUD)
+- Current: b2815f5 (Today review loop)
+
+### Next Steps (Sprint 02)
+1. **Stats screen** — Show review history, streaks, progress charts
+2. **Push notifications** — Expo push tokens, daily reminders
+3. **Settings** — Edit profile (drip_size, daily_time, timezone)
+4. **Development build** — For stable auth redirects and push notifications
+
+### Key Files
+```
+src/lib/supabase.ts      # Supabase client
+src/lib/auth.ts          # Google sign-in/out
+src/lib/items.ts         # Items CRUD
+src/lib/today.ts         # Due items, submit review
+src/lib/scheduling.ts    # Pure scheduling logic (5 grades)
+src/types/database.ts    # TypeScript types for DB
+src/context/AuthContext.tsx  # Auth state management
+app/(tabs)/index.tsx     # Today screen
+app/(tabs)/library.tsx   # Library screen
+app/add-item.tsx         # Add item form
+app/review.tsx           # Review screen with 5 grades
+supabase/schema.sql      # Initial DB schema
+supabase/patch-001-security.sql  # Security fixes
+```
+
+### Dev Notes
+- Expo Go auth redirect: `exp://x1tswb0-budkorpenning-8081.exp.direct` (add to Supabase Redirect URLs)
+- Custom scheme `microlearningdrip://` only works in dev/prod builds, not Expo Go
+- Run with: `npx expo start -c --tunnel`
 
 ## Output format for every response
 Always include:

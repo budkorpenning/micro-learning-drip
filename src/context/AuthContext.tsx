@@ -1,6 +1,7 @@
 import { Session, User } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/src/lib/supabase';
+import { registerDeviceToken, unregisterDeviceToken } from '@/src/lib/notifications';
 
 interface AuthContextType {
   session: Session | null;
@@ -23,12 +24,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setIsLoading(false);
+      // Register device token if logged in
+      if (session?.user) {
+        registerDeviceToken(session.user.id);
+      }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         setSession(session);
+        // Handle device token registration/unregistration
+        if (event === 'SIGNED_IN' && session?.user) {
+          registerDeviceToken(session.user.id);
+        } else if (event === 'SIGNED_OUT') {
+          unregisterDeviceToken();
+        }
       }
     );
 

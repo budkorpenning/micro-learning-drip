@@ -38,8 +38,30 @@ export interface Profile {
   daily_time: string;
   timezone: string;
   drip_size: number;
+  notifications_enabled: boolean;
+  last_notified_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface Device {
+  id: string;
+  user_id: string;
+  expo_push_token: string;
+  platform: 'ios' | 'android' | 'web';
+  disabled_at: string | null;
+  last_seen_at: string;
+  created_at: string;
+}
+
+export interface NotificationLog {
+  id: string;
+  user_id: string;
+  type: string;
+  due_count: number;
+  tokens_sent: number;
+  tokens_failed: number;
+  created_at: string;
 }
 
 export interface Review {
@@ -75,6 +97,12 @@ export interface ReviewInsert {
   reviewed_at?: string;
 }
 
+export interface DeviceInsert {
+  user_id: string;
+  expo_push_token: string;
+  platform: 'ios' | 'android' | 'web';
+}
+
 // Supabase Database type for typed client
 export interface Database {
   public: {
@@ -98,6 +126,16 @@ export interface Database {
         Row: Review;
         Insert: ReviewInsert;
         Update: Partial<Omit<ReviewInsert, 'user_id' | 'item_id'>>;
+      };
+      devices: {
+        Row: Device;
+        Insert: DeviceInsert;
+        Update: Partial<Omit<DeviceInsert, 'user_id'>> & { disabled_at?: string | null };
+      };
+      notification_log: {
+        Row: NotificationLog;
+        Insert: Omit<NotificationLog, 'id' | 'created_at'>;
+        Update: never;
       };
     };
     Views: Record<string, never>;

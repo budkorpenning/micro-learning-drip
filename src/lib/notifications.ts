@@ -58,13 +58,23 @@ export async function getExpoPushToken(): Promise<string | null> {
     return null;
   }
 
+  const projectId = process.env.EXPO_PUBLIC_PROJECT_ID;
+  if (!projectId) {
+    console.warn(
+      'Push notifications disabled: EXPO_PUBLIC_PROJECT_ID not set in .env. ' +
+      'Get your project ID from https://expo.dev'
+    );
+    return null;
+  }
+
   try {
     const { data: token } = await Notifications.getExpoPushTokenAsync({
-      projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
+      projectId,
     });
     return token;
   } catch (error) {
-    console.error('Error getting push token:', error);
+    // Use warn instead of error to avoid red LogBox in Expo Go
+    console.warn('Could not get push token:', error);
     return null;
   }
 }

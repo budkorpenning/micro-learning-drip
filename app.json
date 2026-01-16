@@ -46,7 +46,9 @@
           "color": "#4F46E5",
           "defaultChannel": "daily-reminders"
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,

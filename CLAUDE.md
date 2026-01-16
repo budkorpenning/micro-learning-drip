@@ -81,12 +81,12 @@ All tables must enforce user isolation with Supabase RLS.
 ### Tags
 - v0.1.0: Navigation scaffold complete
 - v0.2.0: Sprint 01 complete (Auth + Items CRUD)
-- Current: 6b9725d (Push notifications complete)
+- Current: f558e91 (Settings screen complete)
 
 ### Next Steps (Sprint 02)
 1. ~~Stats screen~~ ✓
 2. ~~Push notifications~~ ✓ (fully deployed, cron job active)
-3. **Settings screen** — Edit profile (drip_size, daily_time, timezone, notifications_enabled)
+3. ~~Settings screen~~ ✓ (theme toggle, notifications, daily_time, timezone, drip_size)
 4. **Development build** — Required for testing push notifications on physical device
 5. **Add EXPO_PUBLIC_PROJECT_ID** to `.env` — Get from expo.dev dashboard
 
@@ -99,11 +99,14 @@ src/lib/today.ts         # Due items, submit review
 src/lib/scheduling.ts    # Pure scheduling logic (5 grades)
 src/lib/stats.ts         # Stats data fetching (streak, weekly activity)
 src/lib/notifications.ts # Push notification token registration
+src/lib/settings.ts      # Profile settings CRUD
 src/types/database.ts    # TypeScript types for DB
 src/context/AuthContext.tsx  # Auth state management (+ notification registration)
+src/context/ThemeContext.tsx # Theme preference (System/Light/Dark)
 app/(tabs)/index.tsx     # Today screen
 app/(tabs)/library.tsx   # Library screen
 app/(tabs)/stats.tsx     # Stats screen
+app/(tabs)/settings.tsx  # Settings screen
 app/add-item.tsx         # Add item form
 app/review.tsx           # Review screen with 5 grades
 supabase/schema.sql                   # Initial DB schema

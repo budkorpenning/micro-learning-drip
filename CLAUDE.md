@@ -133,7 +133,37 @@ All steps below have been completed for project `wjlxpksvagrnwajgpgpn`:
 5. ✅ Create invoke function and schedule cron job (runs every minute)
 6. ⏳ Add `EXPO_PUBLIC_PROJECT_ID` to `.env` (needed for device token registration)
 
-**Cron job is active** — check logs at: https://supabase.com/dashboard/project/wjlxpksvagrnwajgpgpn/functions/send-daily-reminder/logs
+**Cron job status: DISABLED** (paused during development)
+
+### Re-enabling Push Notifications Cron
+The cron job is intentionally disabled until ready for end-to-end testing.
+
+**To re-enable:**
+```sql
+select cron.schedule(
+  'send-daily-reminder',
+  '* * * * *',
+  $$select public.invoke_send_daily_reminder();$$
+);
+```
+
+**To disable again:**
+```sql
+select cron.unschedule('send-daily-reminder');
+```
+
+**Before re-enabling, ensure:**
+- [ ] `EXPO_PUBLIC_PROJECT_ID` added to `.env`
+- [ ] Development build created (not Expo Go)
+- [ ] Settings screen complete (to configure daily_time)
+- [ ] At least one test item with due schedule
+
+**Guards already in place:**
+- Sends only within ±5 min of user's `daily_time`
+- `last_notified_at` prevents duplicates (once per day max)
+- Invalid tokens get disabled via `disabled_at`
+
+**Logs:** https://supabase.com/dashboard/project/wjlxpksvagrnwajgpgpn/functions/send-daily-reminder/logs
 
 ### Required Environment Variables
 ```

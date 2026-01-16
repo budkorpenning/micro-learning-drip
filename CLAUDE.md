@@ -34,11 +34,12 @@ Build a production-grade single-user micro-learning app ("daily drip") that demo
 3. **Type safety**: TypeScript only. No `any` unless absolutely necessary (and justify it).
 4. **No secrets**: Never hardcode credentials. Use env vars (.env) and document required keys.
 5. **Keep structure clean**:
-   - `src/screens/`
-   - `src/navigation/`
-   - `src/lib/` (supabase client, utils)
-   - `src/components/` (shared UI)
-   - `src/types/` (shared types)
+   - `app/` (Expo Router screens and layouts)
+   - `app/(tabs)/` (tab screens: index, library, stats, settings)
+   - `src/lib/` (supabase client, utils, business logic)
+   - `src/context/` (React contexts: Auth, Theme)
+   - `src/types/` (shared TypeScript types)
+   - `components/` (shared UI components)
 6. **Consistency**:
    - Use functional components
    - Use named exports where sensible
@@ -77,6 +78,7 @@ All tables must enforce user isolation with Supabase RLS.
 - [x] Empty state with motivational message + next due item
 - [x] Stats screen: overview cards, items progress, weekly activity bar chart
 - [x] Push notifications: device token registration, Edge Function, pg_cron setup
+- [x] Settings screen: theme (System/Light/Dark), notifications, daily_time, timezone, drip_size
 
 ### Tags
 - v0.1.0: Navigation scaffold complete
@@ -158,7 +160,7 @@ select cron.unschedule('send-daily-reminder');
 **Before re-enabling, ensure:**
 - [ ] `EXPO_PUBLIC_PROJECT_ID` added to `.env`
 - [ ] Development build created (not Expo Go)
-- [ ] Settings screen complete (to configure daily_time)
+- [x] Settings screen complete (to configure daily_time)
 - [ ] At least one test item with due schedule
 
 **Guards already in place:**

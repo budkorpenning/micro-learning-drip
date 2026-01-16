@@ -61,7 +61,7 @@ Tables:
 
 All tables must enforce user isolation with Supabase RLS.
 
-## Progress (as of 2026-01-15)
+## Progress (as of 2026-01-16)
 
 ### Completed
 - [x] Navigation scaffold (4 tabs: Today, Library, Stats, Settings)
@@ -75,14 +75,15 @@ All tables must enforce user isolation with Supabase RLS.
 - [x] Scheduling logic: pure function in src/lib/scheduling.ts
 - [x] Review persists to reviews table, updates schedule (interval, ease_factor, due_at)
 - [x] Empty state with motivational message + next due item
+- [x] Stats screen: overview cards, items progress, weekly activity bar chart
 
 ### Tags
 - v0.1.0: Navigation scaffold complete
 - v0.2.0: Sprint 01 complete (Auth + Items CRUD)
-- Current: b2815f5 (Today review loop)
+- Current: 4fa24ea (Stats screen)
 
 ### Next Steps (Sprint 02)
-1. **Stats screen** — Show review history, streaks, progress charts
+1. ~~Stats screen~~ ✓
 2. **Push notifications** — Expo push tokens, daily reminders
 3. **Settings** — Edit profile (drip_size, daily_time, timezone)
 4. **Development build** — For stable auth redirects and push notifications
@@ -94,10 +95,12 @@ src/lib/auth.ts          # Google sign-in/out
 src/lib/items.ts         # Items CRUD
 src/lib/today.ts         # Due items, submit review
 src/lib/scheduling.ts    # Pure scheduling logic (5 grades)
-src/types/database.ts    # TypeScript types for DB
+src/lib/stats.ts         # Stats data fetching (streak, weekly activity)
+src/types/database.ts    # TypeScript types for DB (incl. Review)
 src/context/AuthContext.tsx  # Auth state management
 app/(tabs)/index.tsx     # Today screen
 app/(tabs)/library.tsx   # Library screen
+app/(tabs)/stats.tsx     # Stats screen
 app/add-item.tsx         # Add item form
 app/review.tsx           # Review screen with 5 grades
 supabase/schema.sql      # Initial DB schema

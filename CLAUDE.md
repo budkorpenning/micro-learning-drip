@@ -81,13 +81,14 @@ All tables must enforce user isolation with Supabase RLS.
 ### Tags
 - v0.1.0: Navigation scaffold complete
 - v0.2.0: Sprint 01 complete (Auth + Items CRUD)
-- Current: Push notifications implementation
+- Current: 6b9725d (Push notifications complete)
 
 ### Next Steps (Sprint 02)
 1. ~~Stats screen~~ ✓
-2. ~~Push notifications~~ ✓ (code complete, needs deployment)
-3. **Settings** — Edit profile (drip_size, daily_time, timezone, notifications_enabled)
+2. ~~Push notifications~~ ✓ (fully deployed, cron job active)
+3. **Settings screen** — Edit profile (drip_size, daily_time, timezone, notifications_enabled)
 4. **Development build** — Required for testing push notifications on physical device
+5. **Add EXPO_PUBLIC_PROJECT_ID** to `.env` — Get from expo.dev dashboard
 
 ### Key Files
 ```
@@ -118,16 +119,21 @@ supabase/functions/send-daily-reminder/index.ts  # Edge Function
 - Run with: `npx expo start -c --tunnel`
 - Push notifications require physical device + development build (not Expo Go)
 
-### Push Notifications Setup
-1. Run `patch-002-notifications.sql` in Supabase SQL Editor
-2. Deploy Edge Function: `supabase functions deploy send-daily-reminder`
-3. Set database config for pg_cron (in SQL Editor):
+### Push Notifications Setup (COMPLETED 2026-01-16)
+All steps below have been completed for project `wjlxpksvagrnwajgpgpn`:
+
+1. ✅ Run `patch-002-notifications.sql` in Supabase SQL Editor
+2. ✅ Deploy Edge Function: `npx supabase functions deploy send-daily-reminder --project-ref wjlxpksvagrnwajgpgpn`
+3. ✅ Enable extensions: pg_cron, pg_net, pgsodium (for vault)
+4. ✅ Store secrets in Vault:
    ```sql
-   ALTER DATABASE postgres SET "app.settings.supabase_url" = 'https://your-project.supabase.co';
-   ALTER DATABASE postgres SET "app.settings.service_role_key" = 'your-service-role-key';
+   select vault.create_secret('https://wjlxpksvagrnwajgpgpn.supabase.co', 'project_url');
+   select vault.create_secret('eyJ...your-anon-key', 'anon_key');
    ```
-4. Run `patch-003-pgcron.sql` to enable cron job
-5. Add `EXPO_PUBLIC_PROJECT_ID` to `.env` (from Expo dashboard)
+5. ✅ Create invoke function and schedule cron job (runs every minute)
+6. ⏳ Add `EXPO_PUBLIC_PROJECT_ID` to `.env` (needed for device token registration)
+
+**Cron job is active** — check logs at: https://supabase.com/dashboard/project/wjlxpksvagrnwajgpgpn/functions/send-daily-reminder/logs
 
 ### Required Environment Variables
 ```

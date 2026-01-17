@@ -54,7 +54,7 @@ Build a production-grade single-user micro-learning app ("daily drip") that demo
 ## Data model (reference)
 Tables:
 - profiles (id = auth uid, daily_time, timezone, drip_size, notifications_enabled, last_notified_at, ...)
-- items (user_id, title, content, source_url, tags, archived, ...)
+- items (user_id, title=Question, content=Answer, source_url, tags, archived, ...)
 - schedule (item_id, user_id, due_at, interval_days, ...)
 - reviews (user_id, item_id, rating, reviewed_at, interval_days, ...)
 - devices (user_id, expo_push_token, platform, last_seen_at, disabled_at)
@@ -62,7 +62,7 @@ Tables:
 
 All tables must enforce user isolation with Supabase RLS.
 
-## Progress (as of 2026-01-16)
+## Progress (as of 2026-01-17)
 
 ### Completed
 - [x] Navigation scaffold (4 tabs: Today, Library, Stats, Settings)
@@ -79,11 +79,12 @@ All tables must enforce user isolation with Supabase RLS.
 - [x] Stats screen: overview cards, items progress, weekly activity bar chart
 - [x] Push notifications: device token registration, Edge Function, pg_cron setup
 - [x] Settings screen: theme (System/Light/Dark), notifications, daily_time, timezone, drip_size
+- [x] Flashcard UI: Question/Answer terminology, reveal behavior on Review screen
 
 ### Tags
 - v0.1.0: Navigation scaffold complete
 - v0.2.0: Sprint 01 complete (Auth + Items CRUD)
-- Current: f558e91 (Settings screen complete)
+- Current: 01e5372 (Flashcard reveal behavior)
 
 ### Next Steps (Sprint 02)
 1. ~~Stats screen~~ ✓
@@ -109,8 +110,8 @@ app/(tabs)/index.tsx     # Today screen
 app/(tabs)/library.tsx   # Library screen
 app/(tabs)/stats.tsx     # Stats screen
 app/(tabs)/settings.tsx  # Settings screen
-app/add-item.tsx         # Add item form
-app/review.tsx           # Review screen with 5 grades
+app/add-item.tsx         # Add flashcard form (Question/Answer)
+app/review.tsx           # Review screen with reveal + 5 grades
 supabase/schema.sql                   # Initial DB schema
 supabase/patch-001-security.sql       # Security fixes
 supabase/patch-002-notifications.sql  # Notification columns & helper functions

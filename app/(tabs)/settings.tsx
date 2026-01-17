@@ -143,14 +143,6 @@ export default function SettingsScreen() {
     }
   }
 
-  function handleDripSizeChange(delta: number) {
-    if (!profile) return;
-    const newSize = Math.max(1, Math.min(20, profile.drip_size + delta));
-    if (newSize !== profile.drip_size) {
-      updateSetting('drip_size', newSize);
-    }
-  }
-
   async function handleUpdateTimezone() {
     const deviceTz = Localization.getCalendars()[0]?.timeZone ?? 'UTC';
     updateSetting('timezone', deviceTz);
@@ -274,33 +266,6 @@ export default function SettingsScreen() {
                 </ThemedText>
               </Pressable>
             </View>
-
-            {/* Drip size */}
-            <View style={styles.row}>
-              <View>
-                <ThemedText style={styles.label}>Daily items</ThemedText>
-                <ThemedText style={styles.hint}>
-                  Max items per day (1-20)
-                </ThemedText>
-              </View>
-              <View style={styles.stepper}>
-                <Pressable
-                  style={[styles.stepperButton, { borderColor: colors.icon }]}
-                  onPress={() => handleDripSizeChange(-1)}
-                  disabled={profile?.drip_size === 1}>
-                  <ThemedText style={styles.stepperText}>-</ThemedText>
-                </Pressable>
-                <ThemedText style={styles.stepperValue}>
-                  {profile?.drip_size ?? 5}
-                </ThemedText>
-                <Pressable
-                  style={[styles.stepperButton, { borderColor: colors.icon }]}
-                  onPress={() => handleDripSizeChange(1)}
-                  disabled={profile?.drip_size === 20}>
-                  <ThemedText style={styles.stepperText}>+</ThemedText>
-                </Pressable>
-              </View>
-            </View>
           </View>
         </View>
 
@@ -421,11 +386,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
   },
-  hint: {
-    fontSize: 12,
-    opacity: 0.6,
-    marginTop: 2,
-  },
   segmentedControl: {
     flexDirection: 'row',
     marginTop: 12,
@@ -467,29 +427,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 6,
     borderWidth: 1,
-  },
-  stepper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  stepperButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepperText: {
-    fontSize: 20,
-    fontWeight: '600',
-  },
-  stepperValue: {
-    fontSize: 18,
-    fontWeight: '600',
-    minWidth: 30,
-    textAlign: 'center',
   },
   statusBadge: {
     color: '#fff',

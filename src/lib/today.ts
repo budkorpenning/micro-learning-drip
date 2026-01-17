@@ -8,7 +8,7 @@ export interface DueItem {
 }
 
 /**
- * Get due items for the current user (up to drip_size)
+ * Get all due items for the current user
  */
 export async function getDueItems(): Promise<DueItem[]> {
   const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -16,15 +16,6 @@ export async function getDueItems(): Promise<DueItem[]> {
   if (userError || !user) {
     throw new Error('Not authenticated');
   }
-
-  // Get user's drip_size from profile (default to 5)
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('drip_size')
-    .eq('id', user.id)
-    .single();
-
-  const dripSize = (profile as { drip_size: number } | null)?.drip_size ?? 5;
 
   // Get due items: schedule.due_at <= now, items.archived = false
   const now = new Date().toISOString();
@@ -38,8 +29,7 @@ export async function getDueItems(): Promise<DueItem[]> {
     .eq('user_id', user.id)
     .lte('due_at', now)
     .eq('items.archived', false)
-    .order('due_at', { ascending: true })
-    .limit(dripSize);
+    .order('due_at', { ascending: true });
 
   if (error) {
     throw new Error(`Failed to fetch due items: ${error.message}`);

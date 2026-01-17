@@ -53,7 +53,7 @@ Build a production-grade single-user micro-learning app ("daily drip") that demo
 
 ## Data model (reference)
 Tables:
-- profiles (id = auth uid, daily_time, timezone, drip_size, notifications_enabled, last_notified_at, ...)
+- profiles (id = auth uid, daily_time, timezone, notifications_enabled, last_notified_at, ...)
 - items (user_id, title=Question, content=Answer, source_url, tags, archived, ...)
 - schedule (item_id, user_id, due_at, interval_days, ...)
 - reviews (user_id, item_id, rating, reviewed_at, interval_days, ...)
@@ -78,7 +78,7 @@ All tables must enforce user isolation with Supabase RLS.
 - [x] Empty state with motivational message + next due item
 - [x] Stats screen: overview cards (Total, Due now, Streak), items progress, weekly activity
 - [x] Push notifications: device token registration, Edge Function, pg_cron setup
-- [x] Settings screen: theme (System/Light/Dark), notifications, daily_time, timezone, drip_size
+- [x] Settings screen: theme (System/Light/Dark), notifications, daily_time, timezone
 - [x] Flashcard UI: Question/Answer terminology, reveal behavior on Review screen
 
 ### Tags
@@ -89,7 +89,7 @@ All tables must enforce user isolation with Supabase RLS.
 ### Next Steps (Sprint 02)
 1. ~~Stats screen~~ ✓
 2. ~~Push notifications~~ ✓ (fully deployed, cron job active)
-3. ~~Settings screen~~ ✓ (theme toggle, notifications, daily_time, timezone, drip_size)
+3. ~~Settings screen~~ ✓ (theme toggle, notifications, daily_time, timezone)
 4. **Development build** — Required for testing push notifications on physical device
 5. **Add EXPO_PUBLIC_PROJECT_ID** to `.env` — Get from expo.dev dashboard
 

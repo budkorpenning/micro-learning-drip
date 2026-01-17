@@ -76,7 +76,7 @@ All tables must enforce user isolation with Supabase RLS.
 - [x] Scheduling logic: pure function in src/lib/scheduling.ts
 - [x] Review persists to reviews table, updates schedule (interval, ease_factor, due_at)
 - [x] Empty state with motivational message + next due item
-- [x] Stats screen: overview cards, items progress, weekly activity bar chart
+- [x] Stats screen: overview cards (Total, Due now, Streak), items progress, weekly activity
 - [x] Push notifications: device token registration, Edge Function, pg_cron setup
 - [x] Settings screen: theme (System/Light/Dark), notifications, daily_time, timezone, drip_size
 - [x] Flashcard UI: Question/Answer terminology, reveal behavior on Review screen
@@ -84,7 +84,7 @@ All tables must enforce user isolation with Supabase RLS.
 ### Tags
 - v0.1.0: Navigation scaffold complete
 - v0.2.0: Sprint 01 complete (Auth + Items CRUD)
-- Current: 01e5372 (Flashcard reveal behavior)
+- Current: 5d3a7be (Stats: Due now replaces Today)
 
 ### Next Steps (Sprint 02)
 1. ~~Stats screen~~ ✓

@@ -84,7 +84,7 @@ All tables must enforce user isolation with Supabase RLS.
 ### Tags
 - v0.1.0: Navigation scaffold complete
 - v0.2.0: Sprint 01 complete (Auth + Items CRUD)
-- Current: 5d3a7be (Stats: Due now replaces Today)
+- Current: 6cfef36 (Remove drip_size, show all due items)
 
 ### Next Steps (Sprint 02)
 1. ~~Stats screen~~ ✓

@@ -10,9 +10,26 @@ export type Json =
   | Json[];
 
 // Row types for direct use in the app
+export interface Deck {
+  id: string;
+  user_id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DeckInsert {
+  name: string;
+}
+
+export interface DeckWithCount extends Deck {
+  card_count: number;
+}
+
 export interface Item {
   id: string;
   user_id: string;
+  deck_id: string;
   title: string;
   content: string;
   source_url: string | null;
@@ -75,6 +92,7 @@ export interface Review {
 
 // Insert types (omit auto-generated fields)
 export interface ItemInsert {
+  deck_id: string;
   title: string;
   content: string;
   source_url?: string | null;
@@ -107,10 +125,15 @@ export interface DeviceInsert {
 export interface Database {
   public: {
     Tables: {
+      decks: {
+        Row: Deck;
+        Insert: DeckInsert & { user_id: string };
+        Update: Partial<DeckInsert>;
+      };
       items: {
         Row: Item;
         Insert: ItemInsert & { user_id: string };
-        Update: Partial<ItemInsert> & { archived?: boolean };
+        Update: Partial<Omit<ItemInsert, 'deck_id'>> & { archived?: boolean; deck_id?: string };
       };
       schedule: {
         Row: Schedule;

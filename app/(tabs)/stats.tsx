@@ -122,8 +122,8 @@ export default function StatsScreen() {
         </View>
       </View>
 
-      {/* This Week */}
-      <Text style={[styles.sectionTitle, { color: textColor }]}>This Week</Text>
+      {/* Reviewed */}
+      <Text style={[styles.sectionTitle, { color: textColor }]}>Reviewed</Text>
       <View style={[styles.card, { borderColor }]}>
         <View style={styles.barsRow}>
           {stats.last7Days.map((day) => {

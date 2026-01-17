@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -16,6 +16,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { createItem } from '@/src/lib/items';
 
 export default function AddItemScreen() {
+  const { deckId } = useLocalSearchParams<{ deckId: string }>();
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -27,7 +28,7 @@ export default function AddItemScreen() {
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor({ light: '#ccc', dark: '#444' }, 'text');
 
-  const isValid = title.trim().length > 0 && content.trim().length > 0;
+  const isValid = title.trim().length > 0 && content.trim().length > 0 && deckId;
 
   async function handleSubmit() {
     if (!isValid || isSubmitting) return;
@@ -37,6 +38,7 @@ export default function AddItemScreen() {
 
     try {
       await createItem({
+        deck_id: deckId!,
         title,
         content,
         source_url: sourceUrl || null,
@@ -123,7 +125,7 @@ export default function AddItemScreen() {
             {isSubmitting ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <ThemedText style={styles.buttonText}>Add Item</ThemedText>
+              <ThemedText style={styles.buttonText}>Add Card</ThemedText>
             )}
           </Pressable>
         </ScrollView>

@@ -54,13 +54,15 @@ Build a production-grade single-user micro-learning app ("daily drip") that demo
 ## Data model (reference)
 Tables:
 - profiles (id = auth uid, daily_time, timezone, notifications_enabled, last_notified_at, ...)
-- items (user_id, title=Question, content=Answer, source_url, tags, archived, ...)
+- decks (user_id, name) — cards are organized into decks
+- items (user_id, deck_id, title=Question, content=Answer, source_url, tags, archived, ...)
 - schedule (item_id, user_id, due_at, interval_days, ...)
 - reviews (user_id, item_id, rating, reviewed_at, interval_days, ...)
 - devices (user_id, expo_push_token, platform, last_seen_at, disabled_at)
 - notification_log (user_id, type, due_count, tokens_sent, tokens_failed)
 
 All tables must enforce user isolation with Supabase RLS.
+Deck ownership is enforced via both RLS policy and trigger (defense-in-depth).
 
 ## Progress (as of 2026-01-17)
 
@@ -80,11 +82,12 @@ All tables must enforce user isolation with Supabase RLS.
 - [x] Push notifications: device token registration, Edge Function, pg_cron setup
 - [x] Settings screen: theme (System/Light/Dark), notifications, daily_time, timezone
 - [x] Flashcard UI: Question/Answer terminology, reveal behavior on Review screen
+- [x] Decks: cards organized into decks, Library shows decks, deck detail shows cards
 
 ### Tags
 - v0.1.0: Navigation scaffold complete
 - v0.2.0: Sprint 01 complete (Auth + Items CRUD)
-- Current: 765bbae (Stats: Reviewed section header)
+- Current: 54fc19d (Decks feature complete)
 
 ### Next Steps (Sprint 02)
 1. ~~Stats screen~~ ✓
@@ -97,7 +100,8 @@ All tables must enforce user isolation with Supabase RLS.
 ```
 src/lib/supabase.ts      # Supabase client
 src/lib/auth.ts          # Google sign-in/out
-src/lib/items.ts         # Items CRUD
+src/lib/decks.ts         # Decks CRUD
+src/lib/items.ts         # Items CRUD (requires deck_id)
 src/lib/today.ts         # Due items, submit review
 src/lib/scheduling.ts    # Pure scheduling logic (5 grades)
 src/lib/stats.ts         # Stats data fetching (streak, weekly activity)
@@ -106,16 +110,19 @@ src/lib/settings.ts      # Profile settings CRUD
 src/types/database.ts    # TypeScript types for DB
 src/context/AuthContext.tsx  # Auth state management (+ notification registration)
 src/context/ThemeContext.tsx # Theme preference (System/Light/Dark)
-app/(tabs)/index.tsx     # Today screen
-app/(tabs)/library.tsx   # Library screen
+app/(tabs)/index.tsx     # Today screen (all due cards across decks)
+app/(tabs)/library.tsx   # Library screen (shows decks)
 app/(tabs)/stats.tsx     # Stats screen
 app/(tabs)/settings.tsx  # Settings screen
-app/add-item.tsx         # Add flashcard form (Question/Answer)
+app/create-deck.tsx      # Create deck modal
+app/deck/[id].tsx        # Deck detail screen (cards in deck)
+app/add-item.tsx         # Add card form (requires deckId param)
 app/review.tsx           # Review screen with reveal + 5 grades
 supabase/schema.sql                   # Initial DB schema
 supabase/patch-001-security.sql       # Security fixes
 supabase/patch-002-notifications.sql  # Notification columns & helper functions
 supabase/patch-003-pgcron.sql         # pg_cron job setup (run manually)
+supabase/patch-004-decks.sql          # Decks table + deck_id on items
 supabase/functions/send-daily-reminder/index.ts  # Edge Function
 ```
 

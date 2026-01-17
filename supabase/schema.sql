@@ -29,12 +29,47 @@ create policy "Users can insert own profile"
   with check (auth.uid() = id);
 
 -- ============================================
+-- DECKS
+-- Card organization (each card belongs to one deck)
+-- ============================================
+create table public.decks (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  name text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint decks_user_name_unique unique (user_id, name)
+);
+
+alter table public.decks enable row level security;
+
+create policy "Users can view own decks"
+  on public.decks for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert own decks"
+  on public.decks for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update own decks"
+  on public.decks for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+create policy "Users can delete own decks"
+  on public.decks for delete
+  using (auth.uid() = user_id);
+
+create index decks_user_id_idx on public.decks(user_id);
+
+-- ============================================
 -- ITEMS
--- Learning items (flashcards, notes, etc.)
+-- Learning items (flashcards) belonging to a deck
 -- ============================================
 create table public.items (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
+  deck_id uuid not null references public.decks(id) on delete cascade,
   title text not null,
   content text not null,
   source_url text,
@@ -52,18 +87,58 @@ create policy "Users can view own items"
 
 create policy "Users can insert own items"
   on public.items for insert
-  with check (auth.uid() = user_id);
+  with check (
+    auth.uid() = user_id
+    and exists (
+      select 1 from public.decks
+      where id = deck_id and user_id = auth.uid()
+    )
+  );
 
 create policy "Users can update own items"
   on public.items for update
-  using (auth.uid() = user_id);
+  using (auth.uid() = user_id)
+  with check (
+    auth.uid() = user_id
+    and exists (
+      select 1 from public.decks
+      where id = deck_id and user_id = auth.uid()
+    )
+  );
 
 create policy "Users can delete own items"
   on public.items for delete
   using (auth.uid() = user_id);
 
 create index items_user_id_idx on public.items(user_id);
+create index items_deck_id_idx on public.items(deck_id);
 create index items_archived_idx on public.items(user_id, archived);
+
+-- Defense-in-depth: Trigger to enforce deck ownership
+create or replace function public.enforce_deck_ownership()
+returns trigger
+language plpgsql
+as $$
+declare
+  deck_owner uuid;
+begin
+  select user_id into deck_owner from public.decks where id = new.deck_id;
+
+  if deck_owner is null then
+    raise exception 'Invalid deck_id';
+  end if;
+
+  if new.user_id <> deck_owner then
+    raise exception 'user_id must match deck owner';
+  end if;
+
+  return new;
+end;
+$$;
+
+create trigger trg_items_enforce_deck_ownership
+  before insert or update on public.items
+  for each row execute function public.enforce_deck_ownership();
 
 -- ============================================
 -- SCHEDULE
@@ -195,6 +270,10 @@ $$;
 
 create trigger profiles_updated_at
   before update on public.profiles
+  for each row execute function public.update_updated_at();
+
+create trigger decks_updated_at
+  before update on public.decks
   for each row execute function public.update_updated_at();
 
 create trigger items_updated_at

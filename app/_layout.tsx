@@ -42,8 +42,10 @@ function RootLayoutNav() {
       <Stack>
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="add-item" options={{ title: 'Add Item' }} />
+        <Stack.Screen name="add-item" options={{ title: 'Add Card' }} />
         <Stack.Screen name="review" options={{ title: 'Review' }} />
+        <Stack.Screen name="deck/[id]" options={{ title: 'Deck' }} />
+        <Stack.Screen name="create-deck" options={{ presentation: 'modal', title: 'Create Deck' }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />

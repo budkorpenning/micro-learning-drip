@@ -98,11 +98,8 @@ export default function TodayScreen() {
         ]}
         onPress={() => handleItemPress(item)}>
         <View style={styles.itemContent}>
-          <ThemedText type="defaultSemiBold" numberOfLines={1}>
+          <ThemedText type="defaultSemiBold" numberOfLines={2}>
             {item.item.title}
-          </ThemedText>
-          <ThemedText numberOfLines={2} style={styles.itemDescription}>
-            {item.item.content}
           </ThemedText>
         </View>
         <ThemedText style={styles.reviewPrompt}>Review →</ThemedText>
@@ -200,11 +197,6 @@ const styles = StyleSheet.create({
   itemContent: {
     flex: 1,
     marginRight: 12,
-  },
-  itemDescription: {
-    opacity: 0.7,
-    marginTop: 4,
-    fontSize: 14,
   },
   reviewPrompt: {
     opacity: 0.5,

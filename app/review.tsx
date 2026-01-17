@@ -38,8 +38,14 @@ export default function ReviewScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [revealed, setRevealed] = useState(false);
 
   const borderColor = useThemeColor({ light: '#ddd', dark: '#333' }, 'text');
+
+  // Reset revealed state when itemId changes
+  useEffect(() => {
+    setRevealed(false);
+  }, [params.itemId]);
 
   useEffect(() => {
     async function fetchItem() {
@@ -112,36 +118,55 @@ export default function ReviewScreen() {
   return (
     <ThemedView style={styles.container}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+        <ThemedText type="subtitle" style={styles.label}>
+          Question
+        </ThemedText>
         <ThemedText type="title" style={styles.title}>
           {item.title}
         </ThemedText>
 
-        <ThemedText style={styles.content}>
-          {item.content}
-        </ThemedText>
+        {revealed ? (
+          <>
+            <ThemedText type="subtitle" style={styles.label}>
+              Answer
+            </ThemedText>
+            <ThemedText style={styles.content}>
+              {item.content}
+            </ThemedText>
 
-        {item.source_url && (
+            {item.source_url && (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.sourceLink,
+                  { borderColor },
+                  pressed && styles.linkPressed,
+                ]}
+                onPress={() => handleOpenUrl(item.source_url!)}>
+                <ThemedText style={styles.sourceLinkText} numberOfLines={1}>
+                  {item.source_url}
+                </ThemedText>
+              </Pressable>
+            )}
+
+            {item.tags.length > 0 && (
+              <View style={styles.tagsContainer}>
+                {item.tags.map((tag, index) => (
+                  <View key={index} style={[styles.tag, { borderColor }]}>
+                    <ThemedText style={styles.tagText}>{tag}</ThemedText>
+                  </View>
+                ))}
+              </View>
+            )}
+          </>
+        ) : (
           <Pressable
             style={({ pressed }) => [
-              styles.sourceLink,
-              { borderColor },
-              pressed && styles.linkPressed,
+              styles.revealButton,
+              pressed && styles.revealButtonPressed,
             ]}
-            onPress={() => handleOpenUrl(item.source_url!)}>
-            <ThemedText style={styles.sourceLinkText} numberOfLines={1}>
-              {item.source_url}
-            </ThemedText>
+            onPress={() => setRevealed(true)}>
+            <ThemedText style={styles.revealButtonText}>Reveal answer</ThemedText>
           </Pressable>
-        )}
-
-        {item.tags.length > 0 && (
-          <View style={styles.tagsContainer}>
-            {item.tags.map((tag, index) => (
-              <View key={index} style={[styles.tag, { borderColor }]}>
-                <ThemedText style={styles.tagText}>{tag}</ThemedText>
-              </View>
-            ))}
-          </View>
         )}
       </ScrollView>
 
@@ -149,30 +174,32 @@ export default function ReviewScreen() {
         <ThemedText style={styles.error}>{error}</ThemedText>
       )}
 
-      <View style={styles.gradeContainer}>
-        <ThemedText style={styles.gradePrompt}>
-          How well did you remember this?
-        </ThemedText>
-        <View style={styles.gradeButtons}>
-          {([1, 2, 3, 4, 5] as Grade[]).map((grade) => (
-            <Pressable
-              key={grade}
-              style={({ pressed }) => [
-                styles.gradeButton,
-                { backgroundColor: GRADE_COLORS[grade] },
-                pressed && styles.gradeButtonPressed,
-                isSubmitting && styles.gradeButtonDisabled,
-              ]}
-              onPress={() => handleGrade(grade)}
-              disabled={isSubmitting}>
-              <ThemedText style={styles.gradeNumber}>{grade}</ThemedText>
-              <ThemedText style={styles.gradeLabel}>
-                {GRADE_LABELS[grade]}
-              </ThemedText>
-            </Pressable>
-          ))}
+      {revealed && (
+        <View style={styles.gradeContainer}>
+          <ThemedText style={styles.gradePrompt}>
+            How well did you remember this?
+          </ThemedText>
+          <View style={styles.gradeButtons}>
+            {([1, 2, 3, 4, 5] as Grade[]).map((grade) => (
+              <Pressable
+                key={grade}
+                style={({ pressed }) => [
+                  styles.gradeButton,
+                  { backgroundColor: GRADE_COLORS[grade] },
+                  pressed && styles.gradeButtonPressed,
+                  isSubmitting && styles.gradeButtonDisabled,
+                ]}
+                onPress={() => handleGrade(grade)}
+                disabled={isSubmitting}>
+                <ThemedText style={styles.gradeNumber}>{grade}</ThemedText>
+                <ThemedText style={styles.gradeLabel}>
+                  {GRADE_LABELS[grade]}
+                </ThemedText>
+              </Pressable>
+            ))}
+          </View>
         </View>
-      </View>
+      )}
     </ThemedView>
   );
 }
@@ -192,8 +219,28 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 20,
   },
+  label: {
+    opacity: 0.6,
+    marginBottom: 8,
+    marginTop: 16,
+  },
   title: {
     marginBottom: 16,
+  },
+  revealButton: {
+    backgroundColor: '#4285F4',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 32,
+  },
+  revealButtonPressed: {
+    opacity: 0.8,
+  },
+  revealButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
   },
   content: {
     fontSize: 18,

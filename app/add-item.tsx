@@ -57,25 +57,25 @@ export default function AddItemScreen() {
       <ThemedView style={styles.inner}>
         <ScrollView style={styles.scroll} keyboardShouldPersistTaps="handled">
           <ThemedText type="subtitle" style={styles.label}>
-            Title *
+            Question *
           </ThemedText>
           <TextInput
             style={[styles.input, { color: textColor, borderColor }]}
             value={title}
             onChangeText={setTitle}
-            placeholder="What do you want to learn?"
+            placeholder="Enter your question"
             placeholderTextColor="#888"
             autoFocus
           />
 
           <ThemedText type="subtitle" style={styles.label}>
-            Content *
+            Answer *
           </ThemedText>
           <TextInput
             style={[styles.input, styles.textArea, { color: textColor, borderColor }]}
             value={content}
             onChangeText={setContent}
-            placeholder="The information you want to remember..."
+            placeholder="Enter the answer"
             placeholderTextColor="#888"
             multiline
             numberOfLines={4}

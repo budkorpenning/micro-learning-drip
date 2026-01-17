@@ -87,14 +87,17 @@ Deck ownership is enforced via both RLS policy and trigger (defense-in-depth).
 ### Tags
 - v0.1.0: Navigation scaffold complete
 - v0.2.0: Sprint 01 complete (Auth + Items CRUD)
-- Current: 54fc19d (Decks feature complete)
+- Current: 58aba0b (Decks feature complete)
 
-### Next Steps (Sprint 02)
-1. ~~Stats screen~~ ✓
-2. ~~Push notifications~~ ✓ (fully deployed, cron job active)
-3. ~~Settings screen~~ ✓ (theme toggle, notifications, daily_time, timezone)
-4. **Development build** — Required for testing push notifications on physical device
-5. **Add EXPO_PUBLIC_PROJECT_ID** to `.env` — Get from expo.dev dashboard
+### Next Steps
+1. **Development build** — Required for testing push notifications on physical device
+2. **Add EXPO_PUBLIC_PROJECT_ID** to `.env` — Get from expo.dev dashboard
+3. **Deck rename** — Deferred from initial deck implementation
+4. **Move cards between decks** — Optional enhancement
+
+### Database Migration Required
+Run `supabase/patch-004-decks.sql` in Supabase SQL Editor before using the app.
+This clears existing test items and adds the decks table.
 
 ### Key Files
 ```

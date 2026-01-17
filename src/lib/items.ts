@@ -40,6 +40,7 @@ export async function createItem(input: ItemInsert): Promise<Item> {
     .from('items')
     .insert({
       user_id: user.id,
+      deck_id: input.deck_id,
       title: input.title.trim(),
       content: input.content.trim(),
       source_url: input.source_url?.trim() || null,
@@ -92,4 +93,22 @@ export async function setItemArchived(itemId: string, archived: boolean): Promis
   if (error) {
     throw new Error(`Failed to ${archived ? 'archive' : 'unarchive'} item: ${error.message}`);
   }
+}
+
+/**
+ * List items for a specific deck
+ */
+export async function listItemsByDeck(deckId: string, options: { archived: boolean }): Promise<Item[]> {
+  const { data, error } = await supabase
+    .from('items')
+    .select('*')
+    .eq('deck_id', deckId)
+    .eq('archived', options.archived)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to fetch items: ${error.message}`);
+  }
+
+  return (data ?? []) as Item[];
 }

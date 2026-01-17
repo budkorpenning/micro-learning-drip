@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 
 export interface StatsData {
   totalReviews: number;
-  reviewsToday: number;
+  dueNow: number;
   currentStreak: number;
   activeItems: number;
   masteredItems: number; // interval >= 21 days
@@ -29,14 +29,14 @@ export async function getStats(): Promise<StatsData> {
   // Run queries in parallel for efficiency
   const [
     totalReviewsResult,
-    reviewsTodayResult,
+    dueNowResult,
     streakResult,
     itemsResult,
     scheduleResult,
     last7DaysResult,
   ] = await Promise.all([
     getTotalReviews(user.id),
-    getReviewsToday(user.id),
+    getDueNowCount(user.id),
     calculateStreak(user.id),
     getActiveItemsCount(user.id),
     getScheduleBreakdown(user.id),
@@ -45,7 +45,7 @@ export async function getStats(): Promise<StatsData> {
 
   return {
     totalReviews: totalReviewsResult,
-    reviewsToday: reviewsTodayResult,
+    dueNow: dueNowResult,
     currentStreak: streakResult,
     activeItems: itemsResult,
     masteredItems: scheduleResult.mastered,
@@ -65,17 +65,17 @@ async function getTotalReviews(userId: string): Promise<number> {
   return count ?? 0;
 }
 
-async function getReviewsToday(userId: string): Promise<number> {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+async function getDueNowCount(userId: string): Promise<number> {
+  const now = new Date().toISOString();
 
   const { count, error } = await supabase
-    .from('reviews')
-    .select('*', { count: 'exact', head: true })
+    .from('schedule')
+    .select('*, items!inner(*)', { count: 'exact', head: true })
     .eq('user_id', userId)
-    .gte('reviewed_at', today.toISOString());
+    .lte('due_at', now)
+    .eq('items.archived', false);
 
-  if (error) throw new Error(`Failed to get today's reviews: ${error.message}`);
+  if (error) throw new Error(`Failed to get due items count: ${error.message}`);
   return count ?? 0;
 }
 

@@ -87,8 +87,8 @@ export default function StatsScreen() {
           <Text style={[styles.statLabel, { color: mutedColor }]}>Total</Text>
         </View>
         <View style={[styles.statCard, { borderColor }]}>
-          <Text style={[styles.statValue, { color: textColor }]}>{stats.reviewsToday}</Text>
-          <Text style={[styles.statLabel, { color: mutedColor }]}>Today</Text>
+          <Text style={[styles.statValue, { color: textColor }]}>{stats.dueNow}</Text>
+          <Text style={[styles.statLabel, { color: mutedColor }]}>Due now</Text>
         </View>
         <View style={[styles.statCard, { borderColor }]}>
           <Text style={[styles.statValue, { color: textColor }]}>

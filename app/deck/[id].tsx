@@ -2,7 +2,6 @@ import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Pressable,
   RefreshControl,
@@ -13,7 +12,7 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { getDeck, deleteDeck, setDeckArchived } from '@/src/lib/decks';
+import { getDeck } from '@/src/lib/decks';
 import { listItemsByDeck, setItemArchived } from '@/src/lib/items';
 import type { Deck, Item } from '@/src/types/database';
 
@@ -71,39 +70,6 @@ export default function DeckDetailScreen() {
   function handleRefresh() {
     setIsRefreshing(true);
     fetchData(false);
-  }
-
-  function handleDeleteDeck() {
-    Alert.alert(
-      'Delete Deck',
-      `Are you sure you want to delete "${deck?.name}"? This will permanently delete all cards in this deck.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteDeck(id!);
-              router.back();
-            } catch (err) {
-              setError(err instanceof Error ? err.message : 'Failed to delete deck');
-            }
-          },
-        },
-      ]
-    );
-  }
-
-  async function handleDeckArchiveToggle() {
-    if (!deck) return;
-    try {
-      await setDeckArchived(deck.id, !deck.archived);
-      setDeck({ ...deck, archived: !deck.archived });
-      fetchData(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update deck');
-    }
   }
 
   function renderItem({ item }: { item: Item }) {
@@ -171,20 +137,6 @@ export default function DeckDetailScreen() {
       <Stack.Screen
         options={{
           title: deck?.name ?? 'Deck',
-          headerRight: () => (
-            <View style={styles.headerActions}>
-              {deck && (
-                <Pressable onPress={handleDeckArchiveToggle} style={styles.archiveDeckButton}>
-                  <ThemedText style={styles.archiveDeckButtonText}>
-                    {deck.archived ? 'Unarchive' : 'Archive'}
-                  </ThemedText>
-                </Pressable>
-              )}
-              <Pressable onPress={handleDeleteDeck} style={styles.deleteButton}>
-                <ThemedText style={styles.deleteButtonText}>Delete</ThemedText>
-              </Pressable>
-            </View>
-          ),
         }}
       />
 
@@ -250,25 +202,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  deleteButton: {
-    paddingHorizontal: 8,
-  },
-  deleteButtonText: {
-    color: '#ff4444',
-    fontSize: 16,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  archiveDeckButton: {
-    paddingHorizontal: 8,
-  },
-  archiveDeckButtonText: {
-    color: '#4285F4',
-    fontSize: 16,
   },
   segmentContainer: {
     flexDirection: 'row',

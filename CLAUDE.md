@@ -54,7 +54,7 @@ Build a production-grade single-user micro-learning app ("daily drip") that demo
 ## Data model (reference)
 Tables:
 - profiles (id = auth uid, daily_time, timezone, notifications_enabled, last_notified_at, ...)
-- decks (user_id, name) — cards are organized into decks
+- decks (user_id, name, archived) — cards are organized into decks
 - items (user_id, deck_id, title=Question, content=Answer, source_url, tags, archived, ...)
 - schedule (item_id, user_id, due_at, interval_days, ...)
 - reviews (user_id, item_id, rating, reviewed_at, interval_days, ...)
@@ -83,6 +83,7 @@ Deck ownership is enforced via both RLS policy and trigger (defense-in-depth).
 - [x] Settings screen: theme (System/Light/Dark), notifications, daily_time, timezone
 - [x] Flashcard UI: Question/Answer terminology, reveal behavior on Review screen
 - [x] Decks: cards organized into decks, Library shows decks, deck detail shows cards
+- [x] Deck archiving: archive/unarchive decks, syncs all cards, UI reflects archived state
 
 ### Tags
 - v0.1.0: Navigation scaffold complete
@@ -96,8 +97,10 @@ Deck ownership is enforced via both RLS policy and trigger (defense-in-depth).
 4. **Move cards between decks** — Optional enhancement
 
 ### Database Migration Required
-Run `supabase/patch-004-decks.sql` in Supabase SQL Editor before using the app.
-This clears existing test items and adds the decks table.
+Run the following patches in order in Supabase SQL Editor:
+- `supabase/patch-004-decks.sql` — Decks table + deck_id on items
+- `supabase/patch-005-review-rating-1-4.sql` — Rating constraint (1-4)
+- `supabase/patch-006-archive-decks.sql` — Deck archived flag + index
 
 ### Key Files
 ```
@@ -127,6 +130,7 @@ supabase/patch-002-notifications.sql  # Notification columns & helper functions
 supabase/patch-003-pgcron.sql         # pg_cron job setup (run manually)
 supabase/patch-004-decks.sql          # Decks table + deck_id on items
 supabase/patch-005-review-rating-1-4.sql  # Migrate rating 5→4, add constraint
+supabase/patch-006-archive-decks.sql      # Deck archived flag + index
 supabase/functions/send-daily-reminder/index.ts  # Edge Function
 ```
 

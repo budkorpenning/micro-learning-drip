@@ -101,6 +101,7 @@ Run the following patches in order in Supabase SQL Editor:
 - `supabase/patch-004-decks.sql` — Decks table + deck_id on items
 - `supabase/patch-005-review-rating-1-4.sql` — Rating constraint (1-4)
 - `supabase/patch-006-archive-decks.sql` — Deck archived flag + index
+- `supabase/patch-007-sync-deck-item-archived.sql` — Trigger to sync item archived with deck
 
 ### Key Files
 ```
@@ -131,6 +132,7 @@ supabase/patch-003-pgcron.sql         # pg_cron job setup (run manually)
 supabase/patch-004-decks.sql          # Decks table + deck_id on items
 supabase/patch-005-review-rating-1-4.sql  # Migrate rating 5→4, add constraint
 supabase/patch-006-archive-decks.sql      # Deck archived flag + index
+supabase/patch-007-sync-deck-item-archived.sql  # Trigger: sync item archived with deck
 supabase/functions/send-daily-reminder/index.ts  # Edge Function
 ```
 

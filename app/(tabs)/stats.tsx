@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useTranslations } from '@/hooks/use-translations';
+import { getLocale } from '@/src/lib/i18n';
 import { getStats, type StatsData } from '@/src/lib/stats';
 
 export default function StatsScreen() {
@@ -24,6 +26,8 @@ export default function StatsScreen() {
   const accentColor = useThemeColor({ light: '#007AFF', dark: '#0A84FF' }, 'text');
   const mutedColor = useThemeColor({ light: '#8E8E93', dark: '#636366' }, 'text');
   const barBgColor = useThemeColor({ light: '#E5E5EA', dark: '#3A3A3C' }, 'text');
+  const { t, language } = useTranslations();
+  const locale = getLocale(language);
 
   const fetchStats = useCallback(async (showLoading = true) => {
     if (showLoading) setIsLoading(true);
@@ -32,12 +36,12 @@ export default function StatsScreen() {
       const data = await getStats();
       setStats(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load stats');
+      setError(err instanceof Error ? err.message : t('stats.errorLoad'));
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, []);
+  }, [t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -69,7 +73,7 @@ export default function StatsScreen() {
   if (!stats) return null;
 
   const maxCount = Math.max(...stats.last7Days.map(d => d.count), 1);
-  const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'short' });
+  const todayStr = new Date().toLocaleDateString(locale, { weekday: 'short' });
 
   return (
     <ScrollView
@@ -80,54 +84,54 @@ export default function StatsScreen() {
       }
     >
       {/* Overview */}
-      <Text style={[styles.sectionTitle, { color: textColor }]}>Overview</Text>
+      <Text style={[styles.sectionTitle, { color: textColor }]}>{t('stats.overview')}</Text>
       <View style={styles.statsRow}>
         <View style={[styles.statCard, { borderColor }]}>
           <Text style={[styles.statValue, { color: textColor }]}>{stats.totalReviews}</Text>
-          <Text style={[styles.statLabel, { color: mutedColor }]}>Total</Text>
+          <Text style={[styles.statLabel, { color: mutedColor }]}>{t('stats.total')}</Text>
         </View>
         <View style={[styles.statCard, { borderColor }]}>
           <Text style={[styles.statValue, { color: textColor }]}>{stats.dueNow}</Text>
-          <Text style={[styles.statLabel, { color: mutedColor }]}>Due now</Text>
+          <Text style={[styles.statLabel, { color: mutedColor }]}>{t('stats.dueNow')}</Text>
         </View>
         <View style={[styles.statCard, { borderColor }]}>
           <Text style={[styles.statValue, { color: textColor }]}>
             {stats.currentStreak > 0 ? `${stats.currentStreak}d` : '-'}
           </Text>
-          <Text style={[styles.statLabel, { color: mutedColor }]}>Streak</Text>
+          <Text style={[styles.statLabel, { color: mutedColor }]}>{t('stats.streak')}</Text>
         </View>
       </View>
 
       {/* Items Progress */}
-      <Text style={[styles.sectionTitle, { color: textColor }]}>Items Progress</Text>
+      <Text style={[styles.sectionTitle, { color: textColor }]}>{t('stats.itemsProgress')}</Text>
       <View style={[styles.card, { borderColor }]}>
         <View style={styles.progressRow}>
           <View style={[styles.dot, { backgroundColor: '#FF9500' }]} />
-          <Text style={[styles.progressLabel, { color: textColor }]}>Learning</Text>
+          <Text style={[styles.progressLabel, { color: textColor }]}>{t('stats.learning')}</Text>
           <Text style={[styles.progressValue, { color: textColor }]}>{stats.learningItems}</Text>
         </View>
         <View style={styles.progressRow}>
           <View style={[styles.dot, { backgroundColor: '#007AFF' }]} />
-          <Text style={[styles.progressLabel, { color: textColor }]}>Reviewing</Text>
+          <Text style={[styles.progressLabel, { color: textColor }]}>{t('stats.reviewing')}</Text>
           <Text style={[styles.progressValue, { color: textColor }]}>{stats.reviewingItems}</Text>
         </View>
         <View style={styles.progressRow}>
           <View style={[styles.dot, { backgroundColor: '#34C759' }]} />
-          <Text style={[styles.progressLabel, { color: textColor }]}>Mastered</Text>
+          <Text style={[styles.progressLabel, { color: textColor }]}>{t('stats.mastered')}</Text>
           <Text style={[styles.progressValue, { color: textColor }]}>{stats.masteredItems}</Text>
         </View>
         <View style={[styles.progressRow, styles.totalRow]}>
-          <Text style={[styles.progressLabel, { color: textColor }]}>Total Active</Text>
+          <Text style={[styles.progressLabel, { color: textColor }]}>{t('stats.totalActive')}</Text>
           <Text style={[styles.progressValue, { color: textColor }]}>{stats.activeItems}</Text>
         </View>
       </View>
 
       {/* Reviewed */}
-      <Text style={[styles.sectionTitle, { color: textColor }]}>Reviewed</Text>
+      <Text style={[styles.sectionTitle, { color: textColor }]}>{t('stats.reviewed')}</Text>
       <View style={[styles.card, { borderColor }]}>
         <View style={styles.barsRow}>
           {stats.last7Days.map((day) => {
-            const dayLabel = new Date(day.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' });
+            const dayLabel = new Date(day.date + 'T00:00:00').toLocaleDateString(locale, { weekday: 'short' });
             const isToday = dayLabel === todayStr;
             const barHeight = maxCount > 0 ? (day.count / maxCount) * 50 : 0;
 

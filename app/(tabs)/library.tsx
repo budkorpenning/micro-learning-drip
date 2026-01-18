@@ -12,6 +12,7 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useTranslations } from '@/hooks/use-translations';
 import { listDecks, setDeckArchived } from '@/src/lib/decks';
 import type { DeckWithCount } from '@/src/types/database';
 
@@ -26,6 +27,7 @@ export default function LibraryScreen() {
   const borderColor = useThemeColor({ light: '#ddd', dark: '#333' }, 'text');
   const segmentBg = useThemeColor({ light: '#eee', dark: '#222' }, 'background');
   const activeSegmentBg = useThemeColor({ light: '#fff', dark: '#444' }, 'background');
+  const { t } = useTranslations();
 
   const fetchDecks = useCallback(async (archived: boolean, showLoading = true) => {
     if (showLoading) setIsLoading(true);
@@ -35,12 +37,12 @@ export default function LibraryScreen() {
       const data = await listDecks({ archived });
       setDecks(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load decks');
+      setError(err instanceof Error ? err.message : t('library.errorLoad'));
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, []);
+  }, [t]);
 
   // Refresh when screen comes into focus (e.g., after creating a deck)
   useFocusEffect(
@@ -59,7 +61,7 @@ export default function LibraryScreen() {
       await setDeckArchived(deck.id, !deck.archived);
       setDecks((prev) => prev.filter((d) => d.id !== deck.id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update deck');
+      setError(err instanceof Error ? err.message : t('library.errorUpdate'));
     }
   }
 
@@ -83,7 +85,12 @@ export default function LibraryScreen() {
               {item.name}
             </ThemedText>
             <ThemedText style={styles.cardCount}>
-              {item.card_count} {item.card_count === 1 ? 'card' : 'cards'}
+              {t(
+                item.card_count === 1
+                  ? 'library.cardCount_one'
+                  : 'library.cardCount_other',
+                { count: item.card_count }
+              )}
             </ThemedText>
           </View>
           <ThemedText style={styles.chevron}>›</ThemedText>
@@ -95,7 +102,7 @@ export default function LibraryScreen() {
           ]}
           onPress={() => handleDeckArchiveToggle(item)}>
           <ThemedText style={styles.archiveButtonText}>
-            {item.archived ? 'Unarchive' : 'Archive'}
+            {item.archived ? t('common.unarchive') : t('common.archive')}
           </ThemedText>
         </Pressable>
       </View>
@@ -107,11 +114,11 @@ export default function LibraryScreen() {
     return (
       <View style={styles.emptyContainer}>
         <ThemedText style={styles.emptyText}>
-          {showArchived ? 'No archived decks' : 'Create your first deck'}
+          {showArchived ? t('library.emptyArchived') : t('library.emptyActive')}
         </ThemedText>
         {!showArchived && (
           <ThemedText style={styles.emptySubtext}>
-            Tap + to get started
+            {t('library.emptyActiveHint')}
           </ThemedText>
         )}
       </View>
@@ -133,7 +140,7 @@ export default function LibraryScreen() {
           ]}
           onPress={() => handleSegmentChange(false)}>
           <ThemedText style={!showArchived ? styles.segmentTextActive : styles.segmentText}>
-            Active
+            {t('common.active')}
           </ThemedText>
         </Pressable>
         <Pressable
@@ -143,7 +150,7 @@ export default function LibraryScreen() {
           ]}
           onPress={() => handleSegmentChange(true)}>
           <ThemedText style={showArchived ? styles.segmentTextActive : styles.segmentText}>
-            Archived
+            {t('common.archived')}
           </ThemedText>
         </Pressable>
       </View>

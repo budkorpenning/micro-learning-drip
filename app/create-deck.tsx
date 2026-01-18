@@ -12,6 +12,7 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useTranslations } from '@/hooks/use-translations';
 import { createDeck } from '@/src/lib/decks';
 
 export default function CreateDeckScreen() {
@@ -22,6 +23,7 @@ export default function CreateDeckScreen() {
 
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor({ light: '#ccc', dark: '#444' }, 'text');
+  const { t } = useTranslations();
 
   const isValid = name.trim().length > 0;
 
@@ -35,7 +37,7 @@ export default function CreateDeckScreen() {
       await createDeck({ name });
       router.back();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create deck');
+      setError(err instanceof Error ? err.message : t('createDeck.error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -47,13 +49,13 @@ export default function CreateDeckScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ThemedView style={styles.inner}>
         <ThemedText type="subtitle" style={styles.label}>
-          Deck Name *
+          {t('createDeck.label')}
         </ThemedText>
         <TextInput
           style={[styles.input, { color: textColor, borderColor }]}
           value={name}
           onChangeText={setName}
-          placeholder="e.g. Spanish Vocabulary"
+          placeholder={t('createDeck.placeholder')}
           placeholderTextColor="#888"
           autoFocus
           returnKeyType="done"
@@ -75,7 +77,7 @@ export default function CreateDeckScreen() {
           {isSubmitting ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <ThemedText style={styles.buttonText}>Create Deck</ThemedText>
+            <ThemedText style={styles.buttonText}>{t('createDeck.button')}</ThemedText>
           )}
         </Pressable>
       </ThemedView>

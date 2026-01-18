@@ -56,6 +56,7 @@ export interface Profile {
   id: string;
   daily_time: string;
   timezone: string;
+  language: string;
   drip_size: number;
   notifications_enabled: boolean;
   last_notified_at: string | null;

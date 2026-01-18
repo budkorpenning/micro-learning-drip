@@ -12,6 +12,7 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useTranslations } from '@/hooks/use-translations';
 import { getDeck } from '@/src/lib/decks';
 import { listItemsByDeck, setItemArchived } from '@/src/lib/items';
 import type { Deck, Item } from '@/src/types/database';
@@ -29,6 +30,7 @@ export default function DeckDetailScreen() {
   const borderColor = useThemeColor({ light: '#ddd', dark: '#333' }, 'text');
   const segmentBg = useThemeColor({ light: '#eee', dark: '#222' }, 'background');
   const activeSegmentBg = useThemeColor({ light: '#fff', dark: '#444' }, 'background');
+  const { t } = useTranslations();
 
   const fetchData = useCallback(async (showLoading = true) => {
     if (!id) return;
@@ -46,12 +48,12 @@ export default function DeckDetailScreen() {
       }
       setItems(itemsData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load deck');
+      setError(err instanceof Error ? err.message : t('deck.errorLoad'));
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [id, showArchived]);
+  }, [id, showArchived, t]);
 
   useEffect(() => {
     fetchData();
@@ -63,7 +65,7 @@ export default function DeckDetailScreen() {
       await setItemArchived(item.id, !item.archived);
       setItems(prev => prev.filter(i => i.id !== item.id));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update item');
+      setError(err instanceof Error ? err.message : t('deck.errorUpdateItem'));
     }
   }
 
@@ -75,10 +77,10 @@ export default function DeckDetailScreen() {
   function renderItem({ item }: { item: Item }) {
     const isDeckArchived = Boolean(deck?.archived);
     const archiveLabel = isDeckArchived
-      ? 'Deck archived'
+      ? t('deck.archiveDisabled')
       : item.archived
-        ? 'Unarchive'
-        : 'Archive';
+        ? t('common.unarchive')
+        : t('common.archive');
 
     return (
       <View style={[styles.itemCard, { borderColor }]}>
@@ -117,8 +119,8 @@ export default function DeckDetailScreen() {
       <View style={styles.emptyContainer}>
         <ThemedText style={styles.emptyText}>
           {showArchived
-            ? 'No archived cards'
-            : 'No cards yet. Tap + to add your first card.'}
+            ? t('deck.emptyArchived')
+            : t('deck.emptyActive')}
         </ThemedText>
       </View>
     );
@@ -136,7 +138,7 @@ export default function DeckDetailScreen() {
     <ThemedView style={styles.container}>
       <Stack.Screen
         options={{
-          title: deck?.name ?? 'Deck',
+          title: deck?.name ?? t('deck.titleFallback'),
         }}
       />
 
@@ -149,7 +151,7 @@ export default function DeckDetailScreen() {
           ]}
           onPress={() => setShowArchived(false)}>
           <ThemedText style={!showArchived ? styles.segmentTextActive : styles.segmentText}>
-            Active
+            {t('common.active')}
           </ThemedText>
         </Pressable>
         <Pressable
@@ -159,7 +161,7 @@ export default function DeckDetailScreen() {
           ]}
           onPress={() => setShowArchived(true)}>
           <ThemedText style={showArchived ? styles.segmentTextActive : styles.segmentText}>
-            Archived
+            {t('common.archived')}
           </ThemedText>
         </Pressable>
       </View>

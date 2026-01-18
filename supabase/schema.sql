@@ -9,6 +9,7 @@ create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   daily_time time not null default '09:00',
   timezone text not null default 'UTC',
+  language text not null default 'en',
   drip_size int not null default 5 check (drip_size between 1 and 20),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()

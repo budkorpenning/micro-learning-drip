@@ -3,11 +3,13 @@ import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { useTranslations } from '@/hooks/use-translations';
 import { signInWithGoogle } from '@/src/lib/auth';
 
 export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslations();
 
   async function handleSignIn() {
     setIsLoading(true);
@@ -16,7 +18,7 @@ export default function LoginScreen() {
     try {
       await signInWithGoogle();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Sign in failed');
+      setError(err instanceof Error ? err.message : t('login.signInFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -25,10 +27,10 @@ export default function LoginScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedText type="title" style={styles.title}>
-        Micro Learning Drip
+        {t('login.title')}
       </ThemedText>
       <ThemedText style={styles.subtitle}>
-        Your daily learning companion
+        {t('login.subtitle')}
       </ThemedText>
 
       <Pressable
@@ -43,7 +45,7 @@ export default function LoginScreen() {
           <ActivityIndicator color="#fff" />
         ) : (
           <ThemedText style={styles.buttonText}>
-            Sign in with Google
+            {t('login.signIn')}
           </ThemedText>
         )}
       </Pressable>

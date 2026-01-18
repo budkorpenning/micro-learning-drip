@@ -12,6 +12,7 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useTranslations } from '@/hooks/use-translations';
 import { getDueItems, getNextDueItem, type DueItem } from '@/src/lib/today';
 
 export default function TodayScreen() {
@@ -23,6 +24,7 @@ export default function TodayScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const borderColor = useThemeColor({ light: '#ddd', dark: '#333' }, 'text');
+  const { t } = useTranslations();
 
   const fetchData = useCallback(async (showLoading = true) => {
     if (showLoading) setIsLoading(true);
@@ -40,12 +42,12 @@ export default function TodayScreen() {
         setNextItem(null);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load items');
+      setError(err instanceof Error ? err.message : t('today.errorLoad'));
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, []);
+  }, [t]);
 
   // Refresh when screen comes into focus
   useFocusEffect(
@@ -78,13 +80,16 @@ export default function TodayScreen() {
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
     if (diffDays > 1) {
-      return `in ${diffDays} days`;
+      return t('relative.inDays_other', { count: diffDays });
     } else if (diffDays === 1) {
-      return 'tomorrow';
+      return t('relative.tomorrow');
     } else if (diffHours > 0) {
-      return `in ${diffHours} hour${diffHours > 1 ? 's' : ''}`;
+      return t(
+        diffHours === 1 ? 'relative.inHours_one' : 'relative.inHours_other',
+        { count: diffHours }
+      );
     } else {
-      return 'soon';
+      return t('relative.soon');
     }
   }
 
@@ -102,7 +107,7 @@ export default function TodayScreen() {
             {item.item.title}
           </ThemedText>
         </View>
-        <ThemedText style={styles.reviewPrompt}>Review →</ThemedText>
+        <ThemedText style={styles.reviewPrompt}>{t('today.reviewPrompt')}</ThemedText>
       </Pressable>
     );
   }
@@ -114,19 +119,22 @@ export default function TodayScreen() {
       <View style={styles.emptyContainer}>
         <ThemedText style={styles.emptyEmoji}>🎉</ThemedText>
         <ThemedText type="subtitle" style={styles.emptyTitle}>
-          All caught up!
+          {t('today.emptyTitle')}
         </ThemedText>
         <ThemedText style={styles.emptyText}>
-          Great job! You've reviewed all your due items.
+          {t('today.emptySubtitle')}
         </ThemedText>
         {nextItem && (
           <ThemedText style={styles.nextDue}>
-            Next up: "{nextItem.title}" {formatRelativeTime(nextItem.dueAt)}
+            {t('today.nextUp', {
+              title: nextItem.title,
+              when: formatRelativeTime(nextItem.dueAt),
+            })}
           </ThemedText>
         )}
         {!nextItem && (
           <ThemedText style={styles.nextDue}>
-            Add items in the Library tab to start learning!
+            {t('today.noNext')}
           </ThemedText>
         )}
       </View>
@@ -152,7 +160,12 @@ export default function TodayScreen() {
           ListHeaderComponent={
             dueItems.length > 0 ? (
               <ThemedText style={styles.headerText}>
-                {dueItems.length} item{dueItems.length !== 1 ? 's' : ''} to review
+                {t(
+                  dueItems.length === 1
+                    ? 'today.itemsToReview_one'
+                    : 'today.itemsToReview_other',
+                  { count: dueItems.length }
+                )}
               </ThemedText>
             ) : null
           }

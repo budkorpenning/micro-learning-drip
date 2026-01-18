@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 
 export type ProfileSettings = Pick<
   Database['public']['Tables']['profiles']['Row'],
-  'daily_time' | 'timezone' | 'notifications_enabled'
+  'daily_time' | 'timezone' | 'notifications_enabled' | 'language'
 >;
 
 export type ProfileUpdate = Partial<ProfileSettings>;
@@ -23,7 +23,7 @@ export async function getProfile(): Promise<ProfileSettings> {
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('daily_time, timezone, notifications_enabled')
+    .select('daily_time, timezone, notifications_enabled, language')
     .eq('id', user.id)
     .single();
 

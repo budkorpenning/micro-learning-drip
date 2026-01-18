@@ -7,13 +7,16 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '@/src/context/AuthContext';
+import { LanguageProvider } from '@/src/context/LanguageContext';
 import { ThemeProvider } from '@/src/context/ThemeContext';
+import { useTranslations } from '@/hooks/use-translations';
 
 function RootLayoutNav() {
   const { session, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
   const colorScheme = useColorScheme();
+  const { t } = useTranslations();
 
   useEffect(() => {
     if (isLoading) return;
@@ -42,11 +45,17 @@ function RootLayoutNav() {
       <Stack>
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="add-item" options={{ title: 'Add Card' }} />
-        <Stack.Screen name="review" options={{ title: 'Review' }} />
-        <Stack.Screen name="deck/[id]" options={{ title: 'Deck', headerBackTitle: 'Library' }} />
-        <Stack.Screen name="create-deck" options={{ presentation: 'modal', title: 'Create Deck' }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        <Stack.Screen name="add-item" options={{ title: t('nav.addCard') }} />
+        <Stack.Screen name="review" options={{ title: t('nav.review') }} />
+        <Stack.Screen
+          name="deck/[id]"
+          options={{ title: t('nav.deck'), headerBackTitle: t('nav.library') }}
+        />
+        <Stack.Screen
+          name="create-deck"
+          options={{ presentation: 'modal', title: t('nav.createDeck') }}
+        />
+        <Stack.Screen name="modal" options={{ presentation: 'modal', title: t('nav.modal') }} />
       </Stack>
       <StatusBar style="auto" />
     </NavigationThemeProvider>
@@ -57,7 +66,9 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <RootLayoutNav />
+        <LanguageProvider>
+          <RootLayoutNav />
+        </LanguageProvider>
       </AuthProvider>
     </ThemeProvider>
   );

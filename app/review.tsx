@@ -12,9 +12,10 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useTranslations } from '@/hooks/use-translations';
 import { supabase } from '@/src/lib/supabase';
 import { submitReview } from '@/src/lib/today';
-import { GRADE_LABELS, type Grade } from '@/src/lib/scheduling';
+import { type Grade } from '@/src/lib/scheduling';
 import type { Item } from '@/src/types/database';
 
 const GRADE_COLORS: Record<Grade, string> = {
@@ -40,6 +41,7 @@ export default function ReviewScreen() {
   const [revealed, setRevealed] = useState(false);
 
   const borderColor = useThemeColor({ light: '#ddd', dark: '#333' }, 'text');
+  const { t } = useTranslations();
 
   // Reset revealed state when itemId changes
   useEffect(() => {
@@ -58,14 +60,14 @@ export default function ReviewScreen() {
         if (error) throw error;
         setItem(data as Item);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load item');
+        setError(err instanceof Error ? err.message : t('review.errorLoad'));
       } finally {
         setIsLoading(false);
       }
     }
 
     fetchItem();
-  }, [params.itemId]);
+  }, [params.itemId, t]);
 
   async function handleGrade(grade: Grade) {
     if (isSubmitting || !params.itemId || !params.scheduleId) return;
@@ -83,7 +85,7 @@ export default function ReviewScreen() {
       );
       router.back();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to submit review');
+      setError(err instanceof Error ? err.message : t('review.errorSubmit'));
       setIsSubmitting(false);
     }
   }
@@ -92,7 +94,22 @@ export default function ReviewScreen() {
     try {
       await Linking.openURL(url);
     } catch {
-      setError('Could not open URL');
+      setError(t('review.errorOpenUrl'));
+    }
+  }
+
+  function gradeLabel(grade: Grade): string {
+    switch (grade) {
+      case 1:
+        return t('review.grade.forgot');
+      case 2:
+        return t('review.grade.hard');
+      case 3:
+        return t('review.grade.good');
+      case 4:
+        return t('review.grade.easy');
+      default:
+        return String(grade);
     }
   }
 
@@ -108,7 +125,7 @@ export default function ReviewScreen() {
     return (
       <ThemedView style={styles.container}>
         <ThemedText style={styles.error}>
-          {error || 'Item not found'}
+          {error || t('review.notFound')}
         </ThemedText>
       </ThemedView>
     );
@@ -118,7 +135,7 @@ export default function ReviewScreen() {
     <ThemedView style={styles.container}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         <ThemedText type="subtitle" style={styles.label}>
-          Question
+          {t('review.question')}
         </ThemedText>
         <ThemedText type="title" style={styles.title}>
           {item.title}
@@ -127,7 +144,7 @@ export default function ReviewScreen() {
         {revealed ? (
           <>
             <ThemedText type="subtitle" style={styles.label}>
-              Answer
+              {t('review.answer')}
             </ThemedText>
             <ThemedText style={styles.content}>
               {item.content}
@@ -164,7 +181,7 @@ export default function ReviewScreen() {
               pressed && styles.revealButtonPressed,
             ]}
             onPress={() => setRevealed(true)}>
-            <ThemedText style={styles.revealButtonText}>Reveal answer</ThemedText>
+            <ThemedText style={styles.revealButtonText}>{t('review.reveal')}</ThemedText>
           </Pressable>
         )}
       </ScrollView>
@@ -176,7 +193,7 @@ export default function ReviewScreen() {
       {revealed && (
         <View style={styles.gradeContainer}>
           <ThemedText style={styles.gradePrompt}>
-            How well did you remember this?
+            {t('review.prompt')}
           </ThemedText>
           <View style={styles.gradeButtons}>
             {([1, 2, 3, 4] as Grade[]).map((grade) => (
@@ -192,7 +209,7 @@ export default function ReviewScreen() {
                 disabled={isSubmitting}>
                 <ThemedText style={styles.gradeNumber}>{grade}</ThemedText>
                 <ThemedText style={styles.gradeLabel}>
-                  {GRADE_LABELS[grade]}
+                  {gradeLabel(grade)}
                 </ThemedText>
               </Pressable>
             ))}

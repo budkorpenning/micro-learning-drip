@@ -13,6 +13,7 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useTranslations } from '@/hooks/use-translations';
 import { createItem } from '@/src/lib/items';
 
 export default function AddItemScreen() {
@@ -27,6 +28,7 @@ export default function AddItemScreen() {
 
   const textColor = useThemeColor({}, 'text');
   const borderColor = useThemeColor({ light: '#ccc', dark: '#444' }, 'text');
+  const { t } = useTranslations();
 
   const isValid = title.trim().length > 0 && content.trim().length > 0 && deckId;
 
@@ -46,7 +48,7 @@ export default function AddItemScreen() {
       });
       router.back();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create item');
+      setError(err instanceof Error ? err.message : t('addItem.error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -59,25 +61,25 @@ export default function AddItemScreen() {
       <ThemedView style={styles.inner}>
         <ScrollView style={styles.scroll} keyboardShouldPersistTaps="handled">
           <ThemedText type="subtitle" style={styles.label}>
-            Question *
+            {t('addItem.questionLabel')}
           </ThemedText>
           <TextInput
             style={[styles.input, { color: textColor, borderColor }]}
             value={title}
             onChangeText={setTitle}
-            placeholder="Enter your question"
+            placeholder={t('addItem.questionPlaceholder')}
             placeholderTextColor="#888"
             autoFocus
           />
 
           <ThemedText type="subtitle" style={styles.label}>
-            Answer *
+            {t('addItem.answerLabel')}
           </ThemedText>
           <TextInput
             style={[styles.input, styles.textArea, { color: textColor, borderColor }]}
             value={content}
             onChangeText={setContent}
-            placeholder="Enter the answer"
+            placeholder={t('addItem.answerPlaceholder')}
             placeholderTextColor="#888"
             multiline
             numberOfLines={4}
@@ -85,7 +87,7 @@ export default function AddItemScreen() {
           />
 
           <ThemedText type="subtitle" style={styles.label}>
-            Source URL (optional)
+            {t('addItem.sourceLabel')}
           </ThemedText>
           <TextInput
             style={[styles.input, { color: textColor, borderColor }]}
@@ -99,13 +101,13 @@ export default function AddItemScreen() {
           />
 
           <ThemedText type="subtitle" style={styles.label}>
-            Tags (optional, comma-separated)
+            {t('addItem.tagsLabel')}
           </ThemedText>
           <TextInput
             style={[styles.input, { color: textColor, borderColor }]}
             value={tags}
             onChangeText={setTags}
-            placeholder="e.g. programming, react, hooks"
+            placeholder={t('addItem.tagsPlaceholder')}
             placeholderTextColor="#888"
             autoCapitalize="none"
           />
@@ -125,7 +127,7 @@ export default function AddItemScreen() {
             {isSubmitting ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <ThemedText style={styles.buttonText}>Add Card</ThemedText>
+              <ThemedText style={styles.buttonText}>{t('addItem.button')}</ThemedText>
             )}
           </Pressable>
         </ScrollView>

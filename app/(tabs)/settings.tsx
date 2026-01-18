@@ -17,8 +17,11 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTranslations } from '@/hooks/use-translations';
 import { useAuth } from '@/src/context/AuthContext';
+import { useLanguagePreference } from '@/src/context/LanguageContext';
 import { ThemePreference, useThemePreference } from '@/src/context/ThemeContext';
+import { isSupportedLanguage, type SupportedLanguage } from '@/src/lib/i18n';
 import { signOut } from '@/src/lib/auth';
 import {
   formatDateToTime,
@@ -40,7 +43,9 @@ type DiagnosticsData = {
 export default function SettingsScreen() {
   const { user } = useAuth();
   const colorScheme = useColorScheme();
+  const { t } = useTranslations();
   const { preference: themePreference, setPreference: setThemePreference } = useThemePreference();
+  const { language, setLanguage } = useLanguagePreference();
   const colors = Colors[colorScheme];
 
   // Profile state
@@ -63,6 +68,13 @@ export default function SettingsScreen() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!profile?.language) return;
+    if (isSupportedLanguage(profile.language) && profile.language !== language) {
+      setLanguage(profile.language);
+    }
+  }, [profile?.language, language, setLanguage]);
+
   async function loadProfile() {
     try {
       setIsLoading(true);
@@ -70,7 +82,7 @@ export default function SettingsScreen() {
       const data = await getProfile();
       setProfile(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load settings');
+      setError(err instanceof Error ? err.message : t('settings.errorLoad'));
     } finally {
       setIsLoading(false);
     }
@@ -106,8 +118,8 @@ export default function SettingsScreen() {
       key: K,
       value: ProfileSettings[K],
       dbValue?: unknown
-    ) => {
-      if (!profile) return;
+    ): Promise<boolean> => {
+      if (!profile) return false;
 
       // Optimistic update
       const previousProfile = profile;
@@ -116,18 +128,24 @@ export default function SettingsScreen() {
 
       try {
         await updateProfile({ [key]: dbValue ?? value });
+        return true;
       } catch (err) {
         // Revert on error
         setProfile(previousProfile);
-        setError(err instanceof Error ? err.message : 'Failed to save');
+        setError(err instanceof Error ? err.message : t('settings.errorSave'));
+        return false;
       }
     },
-    [profile]
+    [profile, t]
   );
 
   // Handlers
   function handleThemeChange(newTheme: ThemePreference) {
     setThemePreference(newTheme);
+  }
+
+  function handleLanguageChange(nextLanguage: SupportedLanguage) {
+    updateSetting('language', nextLanguage);
   }
 
   function handleNotificationsToggle(value: boolean) {
@@ -159,6 +177,11 @@ export default function SettingsScreen() {
     }
   }
 
+  const selectedLanguage =
+    profile?.language && isSupportedLanguage(profile.language)
+      ? profile.language
+      : language;
+
   if (isLoading) {
     return (
       <ThemedView style={styles.centered}>
@@ -179,10 +202,10 @@ export default function SettingsScreen() {
         {/* Appearance Section */}
         <View style={styles.section}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>
-            Appearance
+            {t('settings.titleAppearance')}
           </ThemedText>
           <View style={[styles.card, { backgroundColor: colors.background }]}>
-            <ThemedText style={styles.label}>Theme</ThemedText>
+            <ThemedText style={styles.label}>{t('settings.themeLabel')}</ThemedText>
             <View style={styles.segmentedControl}>
               {(['system', 'light', 'dark'] as const).map((option) => (
                 <Pressable
@@ -199,10 +222,37 @@ export default function SettingsScreen() {
                     ]}
                     lightColor={themePreference === option ? '#fff' : undefined}
                     darkColor={themePreference === option ? '#000' : undefined}>
-                    {option.charAt(0).toUpperCase() + option.slice(1)}
+                    {t(`settings.theme.${option}` as const)}
                   </ThemedText>
                 </Pressable>
               ))}
+            </View>
+
+            <View style={styles.controlGroup}>
+              <ThemedText style={styles.label}>{t('settings.languageLabel')}</ThemedText>
+              <View style={styles.segmentedControl}>
+                {(['en', 'sv'] as const).map((option) => (
+                  <Pressable
+                    key={option}
+                    style={[
+                      styles.segment,
+                      selectedLanguage === option && styles.segmentActive,
+                    ]}
+                    onPress={() => handleLanguageChange(option)}>
+                    <ThemedText
+                      style={[
+                        styles.segmentText,
+                        selectedLanguage === option && styles.segmentTextActive,
+                      ]}
+                      lightColor={selectedLanguage === option ? '#fff' : undefined}
+                      darkColor={selectedLanguage === option ? '#000' : undefined}>
+                      {option === 'en'
+                        ? t('settings.language.english')
+                        : t('settings.language.swedish')}
+                    </ThemedText>
+                  </Pressable>
+                ))}
+              </View>
             </View>
           </View>
         </View>
@@ -210,12 +260,12 @@ export default function SettingsScreen() {
         {/* Reminders Section */}
         <View style={styles.section}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>
-            Reminders
+            {t('settings.titleReminders')}
           </ThemedText>
           <View style={[styles.card, { backgroundColor: colors.background }]}>
             {/* Notifications toggle */}
             <View style={styles.row}>
-              <ThemedText style={styles.label}>Notifications</ThemedText>
+              <ThemedText style={styles.label}>{t('settings.notifications')}</ThemedText>
               <Switch
                 value={profile?.notifications_enabled ?? true}
                 onValueChange={handleNotificationsToggle}
@@ -226,7 +276,7 @@ export default function SettingsScreen() {
 
             {/* Daily time picker */}
             <View style={styles.row}>
-              <ThemedText style={styles.label}>Daily reminder</ThemedText>
+              <ThemedText style={styles.label}>{t('settings.dailyReminder')}</ThemedText>
               <Pressable
                 style={[styles.timeButton, { borderColor: colors.icon }]}
                 onPress={() => setShowTimePicker(true)}>
@@ -246,14 +296,14 @@ export default function SettingsScreen() {
             )}
             {Platform.OS === 'android' && showTimePicker && (
               <Pressable onPress={() => setShowTimePicker(false)}>
-                <ThemedText style={styles.link}>Done</ThemedText>
+                <ThemedText style={styles.link}>{t('settings.done')}</ThemedText>
               </Pressable>
             )}
 
             {/* Timezone */}
             <View style={styles.row}>
               <View style={styles.timezoneInfo}>
-                <ThemedText style={styles.label}>Timezone</ThemedText>
+                <ThemedText style={styles.label}>{t('settings.timezone')}</ThemedText>
                 <ThemedText style={styles.timezoneValue}>
                   {profile?.timezone ?? 'UTC'}
                 </ThemedText>
@@ -262,7 +312,7 @@ export default function SettingsScreen() {
                 style={[styles.smallButton, { borderColor: colors.tint }]}
                 onPress={handleUpdateTimezone}>
                 <ThemedText style={{ color: colors.tint, fontSize: 13 }}>
-                  Use device
+                  {t('settings.useDevice')}
                 </ThemedText>
               </Pressable>
             </View>
@@ -273,11 +323,13 @@ export default function SettingsScreen() {
         {__DEV__ && diagnostics && (
           <View style={styles.section}>
             <ThemedText type="subtitle" style={styles.sectionTitle}>
-              Diagnostics (DEV)
+              {t('settings.titleDiagnostics')}
             </ThemedText>
             <View style={[styles.card, { backgroundColor: colors.background }]}>
               <View style={styles.row}>
-                <ThemedText style={styles.label}>Push permission</ThemedText>
+                <ThemedText style={styles.label}>
+                  {t('settings.diagnostics.pushPermission')}
+                </ThemedText>
                 <ThemedText
                   style={[
                     styles.statusBadge,
@@ -292,7 +344,9 @@ export default function SettingsScreen() {
                 </ThemedText>
               </View>
               <View style={styles.row}>
-                <ThemedText style={styles.label}>Device token saved</ThemedText>
+                <ThemedText style={styles.label}>
+                  {t('settings.diagnostics.deviceToken')}
+                </ThemedText>
                 <ThemedText
                   style={[
                     styles.statusBadge,
@@ -300,11 +354,15 @@ export default function SettingsScreen() {
                       backgroundColor: diagnostics.hasToken ? '#22c55e' : '#ef4444',
                     },
                   ]}>
-                  {diagnostics.hasToken ? `Yes (${diagnostics.tokenCount})` : 'No'}
+                  {diagnostics.hasToken
+                    ? `${t('settings.diagnostics.yes')} (${diagnostics.tokenCount})`
+                    : t('settings.diagnostics.no')}
                 </ThemedText>
               </View>
               <View style={styles.row}>
-                <ThemedText style={styles.label}>Physical device</ThemedText>
+                <ThemedText style={styles.label}>
+                  {t('settings.diagnostics.physicalDevice')}
+                </ThemedText>
                 <ThemedText
                   style={[
                     styles.statusBadge,
@@ -312,7 +370,9 @@ export default function SettingsScreen() {
                       backgroundColor: Device.isDevice ? '#22c55e' : '#f59e0b',
                     },
                   ]}>
-                  {Device.isDevice ? 'Yes' : 'Simulator'}
+                  {Device.isDevice
+                    ? t('settings.diagnostics.yes')
+                    : t('settings.diagnostics.simulator')}
                 </ThemedText>
               </View>
             </View>
@@ -322,7 +382,7 @@ export default function SettingsScreen() {
         {/* Account Section */}
         <View style={styles.section}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>
-            Account
+            {t('settings.titleAccount')}
           </ThemedText>
           <View style={[styles.card, { backgroundColor: colors.background }]}>
             {user && (
@@ -332,11 +392,11 @@ export default function SettingsScreen() {
               style={({ pressed }) => [
                 styles.signOutButton,
                 pressed && styles.buttonPressed,
-              ]}
-              onPress={handleSignOut}
-              disabled={isSigningOut}>
+            ]}
+            onPress={handleSignOut}
+            disabled={isSigningOut}>
               <ThemedText style={styles.signOutText}>
-                {isSigningOut ? 'Signing out...' : 'Sign out'}
+                {isSigningOut ? t('settings.signingOut') : t('settings.signOut')}
               </ThemedText>
             </Pressable>
           </View>
@@ -393,6 +453,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(128, 128, 128, 0.3)',
+  },
+  controlGroup: {
+    marginTop: 16,
   },
   segment: {
     flex: 1,

@@ -1,53 +1,294 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
+export const fontWeights = {
+  light: '300',
+  regular: '400',
+  medium: '500',
+  semibold: '600',
+  bold: '700',
+  extrabold: '800',
+};
 
-import { Platform } from 'react-native';
+export const primary = {
+  50: '#eff6ff',
+  100: '#dbeafe',
+  200: '#bfdbfe',
+  300: '#93c5fd',
+  400: '#60a5fa',
+  500: '#1370e9',
+  600: '#0f5cc7',
+  700: '#0d4ba3',
+  800: '#1e3a8a',
+  900: '#1e293b',
+  950: '#172554',
+};
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+export const secondary = {
+  50: '#f0fdf4',
+  100: '#dcfce7',
+  200: '#bbf7d0',
+  300: '#86efac',
+  400: '#4ade80',
+  500: '#22c55e',
+  600: '#16a34a',
+  700: '#15803d',
+  800: '#166534',
+  900: '#14532d',
+  950: '#052e16',
+};
 
-export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+export const gray = {
+  50: '#fafafa',
+  100: '#f4f4f5',
+  200: '#e4e4e7',
+  300: '#d4d4d8',
+  400: '#a1a1aa',
+  500: '#71717a',
+  600: '#52525b',
+  700: '#3f3f46',
+  800: '#27272a',
+  900: '#18181b',
+  950: '#09090b',
+};
+
+export const semantic = {
+  success: '#22c55e',
+  warning: '#eab308',
+  error: '#ef4444',
+  info: '#3b82f6',
+};
+
+export const lightTheme = {
+  background: '#ffffff',
+  surfaceElevated1: '#ffffff',
+  surfaceElevated2: '#ffffff',
+  surfaceElevated3: '#ffffff',
+  textPrimary: 'rgba(0, 0, 0, 0.87)',
+  textSecondary: 'rgba(0, 0, 0, 0.60)',
+  textTertiary: 'rgba(0, 0, 0, 0.50)',
+  textMuted: 'rgba(0, 0, 0, 0.40)',
+  borderPrimary: '#d9d9d9',
+  borderSecondary: '#e6e6e6',
+  primary: '#1370e9',
+  primaryHover: '#0f5cc7',
+  primaryActive: '#1a7ff5',
+  secondary: '#22c55e',
+  secondaryHover: '#16a34a',
+  cardBackground: '#ffffff',
+  cardBorder: 'rgba(19, 112, 233, 0.6)',
+  inputBackground: '#ffffff',
+  inputBorder: '#d1d5db',
+};
+
+export const darkTheme = {
+  background: '#121212',
+  surfaceElevated1: '#1e1e1e',
+  surfaceElevated2: '#242424',
+  surfaceElevated3: '#2a2a2a',
+  textPrimary: 'rgba(255, 255, 255, 0.87)',
+  textSecondary: 'rgba(255, 255, 255, 0.64)',
+  textTertiary: 'rgba(255, 255, 255, 0.56)',
+  textMuted: 'rgba(255, 255, 255, 0.48)',
+  borderPrimary: '#404040',
+  borderSecondary: '#333333',
+  primary: '#4285f4',
+  primaryHover: '#5a95f5',
+  primaryActive: '#3b78dc',
+  secondary: '#34d399',
+  secondaryHover: '#4ade80',
+  cardBackground: '#1e1e1e',
+  cardBorder: 'rgba(66, 133, 244, 0.6)',
+  inputBackground: '#1e1e1e',
+  inputBorder: '#404040',
+};
+
+export const gradients = {
+  primary: {
+    colors: ['#3b82f6', '#22c55e'],
+    start: { x: 0, y: 0 },
+    end: { x: 1, y: 1 },
   },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+  primaryDeep: {
+    colors: ['#1e40af', '#15803d'],
+    start: { x: 0, y: 0 },
+    end: { x: 1, y: 1 },
+  },
+  primaryBright: {
+    colors: ['#60a5fa', '#4ade80'],
+    start: { x: 0, y: 0 },
+    end: { x: 1, y: 1 },
   },
 };
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
+export const spacing = {
+  0: 0,
+  0.5: 2,
+  1: 4,
+  1.5: 6,
+  2: 8,
+  2.5: 10,
+  3: 12,
+  3.5: 14,
+  4: 16,
+  5: 20,
+  6: 24,
+  7: 28,
+  8: 32,
+  9: 36,
+  10: 40,
+  11: 44,
+  12: 48,
+  14: 56,
+  16: 64,
+  20: 80,
+  24: 96,
+  28: 112,
+  32: 128,
+};
+
+export const borderRadius = {
+  none: 0,
+  sm: 4,
+  md: 6,
+  lg: 8,
+  xl: 12,
+  '2xl': 16,
+  '3xl': 24,
+  full: 9999,
+};
+
+export const shadows = {
+  sm: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
+  md: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+  lg: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 5,
   },
-});
+  xl: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+};
+
+export const typography = {
+  h1: { fontSize: 32, lineHeight: 40, fontWeight: '700' },
+  h2: { fontSize: 28, lineHeight: 36, fontWeight: '700' },
+  h3: { fontSize: 24, lineHeight: 32, fontWeight: '600' },
+  h4: { fontSize: 20, lineHeight: 28, fontWeight: '600' },
+  h5: { fontSize: 18, lineHeight: 26, fontWeight: '600' },
+  h6: { fontSize: 16, lineHeight: 24, fontWeight: '600' },
+  bodyLarge: { fontSize: 18, lineHeight: 28, fontWeight: '400' },
+  body: { fontSize: 16, lineHeight: 24, fontWeight: '400' },
+  bodySmall: { fontSize: 14, lineHeight: 20, fontWeight: '400' },
+  label: { fontSize: 14, lineHeight: 20, fontWeight: '500' },
+  labelSmall: { fontSize: 12, lineHeight: 16, fontWeight: '500' },
+  caption: { fontSize: 12, lineHeight: 16, fontWeight: '400' },
+  code: { fontSize: 14, lineHeight: 20, fontWeight: '400' },
+};
+
+export const fontFamilies = {
+  headingBold: 'Montserrat_700Bold',
+  headingSemiBold: 'Montserrat_600SemiBold',
+  headingMedium: 'Montserrat_500Medium',
+  body: 'Inter_400Regular',
+  bodyMedium: 'Inter_500Medium',
+  bodySemiBold: 'Inter_600SemiBold',
+  bodyBold: 'Inter_700Bold',
+  mono: 'JetBrainsMono_400Regular',
+  monoMedium: 'JetBrainsMono_500Medium',
+};
+
+export const Colors = {
+  light: {
+    text: lightTheme.textPrimary,
+    textSecondary: lightTheme.textSecondary,
+    textMuted: lightTheme.textMuted,
+    background: lightTheme.background,
+    surfaceElevated1: lightTheme.surfaceElevated1,
+    surfaceElevated2: lightTheme.surfaceElevated2,
+    surfaceElevated3: lightTheme.surfaceElevated3,
+    borderPrimary: lightTheme.borderPrimary,
+    borderSecondary: lightTheme.borderSecondary,
+    primary: lightTheme.primary,
+    primaryHover: lightTheme.primaryHover,
+    primaryActive: lightTheme.primaryActive,
+    secondary: lightTheme.secondary,
+    secondaryHover: lightTheme.secondaryHover,
+    cardBackground: lightTheme.cardBackground,
+    cardBorder: lightTheme.cardBorder,
+    inputBackground: lightTheme.inputBackground,
+    inputBorder: lightTheme.inputBorder,
+    success: semantic.success,
+    warning: semantic.warning,
+    error: semantic.error,
+    info: semantic.info,
+    tint: lightTheme.primary,
+    icon: lightTheme.textSecondary,
+    tabIconDefault: lightTheme.textMuted,
+    tabIconSelected: lightTheme.primary,
+  },
+  dark: {
+    text: darkTheme.textPrimary,
+    textSecondary: darkTheme.textSecondary,
+    textMuted: darkTheme.textMuted,
+    background: darkTheme.background,
+    surfaceElevated1: darkTheme.surfaceElevated1,
+    surfaceElevated2: darkTheme.surfaceElevated2,
+    surfaceElevated3: darkTheme.surfaceElevated3,
+    borderPrimary: darkTheme.borderPrimary,
+    borderSecondary: darkTheme.borderSecondary,
+    primary: darkTheme.primary,
+    primaryHover: darkTheme.primaryHover,
+    primaryActive: darkTheme.primaryActive,
+    secondary: darkTheme.secondary,
+    secondaryHover: darkTheme.secondaryHover,
+    cardBackground: darkTheme.cardBackground,
+    cardBorder: darkTheme.cardBorder,
+    inputBackground: darkTheme.inputBackground,
+    inputBorder: darkTheme.inputBorder,
+    success: semantic.success,
+    warning: semantic.warning,
+    error: semantic.error,
+    info: semantic.info,
+    tint: darkTheme.primary,
+    icon: darkTheme.textSecondary,
+    tabIconDefault: darkTheme.textMuted,
+    tabIconSelected: darkTheme.primary,
+  },
+};
+
+export const theme = {
+  colors: {
+    primary,
+    secondary,
+    gray,
+    semantic,
+  },
+  light: lightTheme,
+  dark: darkTheme,
+  gradients,
+  spacing,
+  borderRadius,
+  shadows,
+  typography,
+  fontWeights,
+  fontFamilies,
+};
+
+export default theme;

@@ -17,13 +17,7 @@ import { supabase } from '@/src/lib/supabase';
 import { submitReview } from '@/src/lib/today';
 import { type Grade } from '@/src/lib/scheduling';
 import type { Item } from '@/src/types/database';
-
-const GRADE_COLORS: Record<Grade, string> = {
-  1: '#E53935', // Forgot - red
-  2: '#FB8C00', // Hard - orange
-  3: '#FDD835', // Good - yellow
-  4: '#43A047', // Easy - green
-};
+import { fontFamilies } from '@/constants/theme';
 
 export default function ReviewScreen() {
   const router = useRouter();
@@ -40,8 +34,19 @@ export default function ReviewScreen() {
   const [error, setError] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(false);
 
-  const borderColor = useThemeColor({ light: '#ddd', dark: '#333' }, 'text');
+  const borderColor = useThemeColor({}, 'borderPrimary');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const primaryColor = useThemeColor({}, 'primary');
+  const errorColor = useThemeColor({}, 'error');
+  const warningColor = useThemeColor({}, 'warning');
+  const successColor = useThemeColor({}, 'success');
   const { t } = useTranslations();
+  const gradeColors: Record<Grade, string> = {
+    1: errorColor,
+    2: warningColor,
+    3: primaryColor,
+    4: successColor,
+  };
 
   // Reset revealed state when itemId changes
   useEffect(() => {
@@ -124,7 +129,7 @@ export default function ReviewScreen() {
   if (!item) {
     return (
       <ThemedView style={styles.container}>
-        <ThemedText style={styles.error}>
+        <ThemedText style={[styles.error, { color: errorColor }]}>
           {error || t('review.notFound')}
         </ThemedText>
       </ThemedView>
@@ -158,7 +163,7 @@ export default function ReviewScreen() {
                   pressed && styles.linkPressed,
                 ]}
                 onPress={() => handleOpenUrl(item.source_url!)}>
-                <ThemedText style={styles.sourceLinkText} numberOfLines={1}>
+                <ThemedText style={[styles.sourceLinkText, { color: primaryColor }]} numberOfLines={1}>
                   {item.source_url}
                 </ThemedText>
               </Pressable>
@@ -168,7 +173,9 @@ export default function ReviewScreen() {
               <View style={styles.tagsContainer}>
                 {item.tags.map((tag, index) => (
                   <View key={index} style={[styles.tag, { borderColor }]}>
-                    <ThemedText style={styles.tagText}>{tag}</ThemedText>
+                    <ThemedText style={[styles.tagText, { color: textSecondary }]}>
+                      {tag}
+                    </ThemedText>
                   </View>
                 ))}
               </View>
@@ -178,6 +185,7 @@ export default function ReviewScreen() {
           <Pressable
             style={({ pressed }) => [
               styles.revealButton,
+              { backgroundColor: primaryColor },
               pressed && styles.revealButtonPressed,
             ]}
             onPress={() => setRevealed(true)}>
@@ -187,7 +195,9 @@ export default function ReviewScreen() {
       </ScrollView>
 
       {error && (
-        <ThemedText style={styles.error}>{error}</ThemedText>
+        <ThemedText style={[styles.error, { color: errorColor }]}>
+          {error}
+        </ThemedText>
       )}
 
       {revealed && (
@@ -201,7 +211,7 @@ export default function ReviewScreen() {
                 key={grade}
                 style={({ pressed }) => [
                   styles.gradeButton,
-                  { backgroundColor: GRADE_COLORS[grade] },
+                  { backgroundColor: gradeColors[grade] },
                   pressed && styles.gradeButtonPressed,
                   isSubmitting && styles.gradeButtonDisabled,
                 ]}
@@ -244,9 +254,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   revealButton: {
-    backgroundColor: '#4285F4',
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: 6,
     alignItems: 'center',
     marginTop: 32,
   },
@@ -255,8 +264,8 @@ const styles = StyleSheet.create({
   },
   revealButtonText: {
     color: '#fff',
-    fontWeight: '600',
     fontSize: 16,
+    fontFamily: fontFamilies.bodySemiBold,
   },
   content: {
     fontSize: 18,
@@ -265,14 +274,13 @@ const styles = StyleSheet.create({
   sourceLink: {
     marginTop: 20,
     padding: 12,
-    borderWidth: 1,
-    borderRadius: 8,
+    borderWidth: 2,
+    borderRadius: 6,
   },
   linkPressed: {
     opacity: 0.7,
   },
   sourceLinkText: {
-    color: '#4285F4',
     fontSize: 14,
   },
   tagsContainer: {
@@ -282,7 +290,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tag: {
-    borderWidth: 1,
+    borderWidth: 2,
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 4,
@@ -290,9 +298,9 @@ const styles = StyleSheet.create({
   tagText: {
     fontSize: 12,
     opacity: 0.7,
+    fontFamily: fontFamilies.bodyMedium,
   },
   error: {
-    color: '#ff4444',
     textAlign: 'center',
     marginHorizontal: 20,
     marginBottom: 8,
@@ -305,6 +313,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
     opacity: 0.7,
+    fontFamily: fontFamilies.bodyMedium,
   },
   gradeButtons: {
     flexDirection: 'row',
@@ -315,7 +324,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 6,
   },
   gradeButtonPressed: {
     opacity: 0.8,
@@ -326,11 +335,12 @@ const styles = StyleSheet.create({
   gradeNumber: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: fontFamilies.bodyBold,
   },
   gradeLabel: {
     color: '#fff',
     fontSize: 10,
     marginTop: 2,
+    fontFamily: fontFamilies.bodyMedium,
   },
 });

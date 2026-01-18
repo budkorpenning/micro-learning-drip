@@ -5,13 +5,14 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 
+import { ThemedText } from '@/components/themed-text';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useTranslations } from '@/hooks/use-translations';
 import { getLocale } from '@/src/lib/i18n';
+import { fontFamilies, shadows } from '@/constants/theme';
 import { getStats, type StatsData } from '@/src/lib/stats';
 
 export default function StatsScreen() {
@@ -21,11 +22,16 @@ export default function StatsScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const textColor = useThemeColor({}, 'text');
+  const textMuted = useThemeColor({}, 'textMuted');
   const bgColor = useThemeColor({}, 'background');
-  const borderColor = useThemeColor({ light: '#ddd', dark: '#333' }, 'text');
-  const accentColor = useThemeColor({ light: '#007AFF', dark: '#0A84FF' }, 'text');
-  const mutedColor = useThemeColor({ light: '#8E8E93', dark: '#636366' }, 'text');
-  const barBgColor = useThemeColor({ light: '#E5E5EA', dark: '#3A3A3C' }, 'text');
+  const cardBorder = useThemeColor({}, 'cardBorder');
+  const cardBackground = useThemeColor({}, 'cardBackground');
+  const accentColor = useThemeColor({}, 'primary');
+  const barBgColor = useThemeColor({}, 'borderSecondary');
+  const learningColor = useThemeColor({}, 'warning');
+  const reviewingColor = useThemeColor({}, 'primary');
+  const masteredColor = useThemeColor({}, 'secondary');
+  const errorColor = useThemeColor({}, 'error');
   const { t, language } = useTranslations();
   const locale = getLocale(language);
 
@@ -65,7 +71,9 @@ export default function StatsScreen() {
   if (error) {
     return (
       <View style={[styles.centered, { backgroundColor: bgColor }]}>
-        <Text style={styles.errorText}>{error}</Text>
+        <ThemedText style={[styles.errorText, { color: errorColor }]}>
+          {error}
+        </ThemedText>
       </View>
     );
   }
@@ -84,51 +92,83 @@ export default function StatsScreen() {
       }
     >
       {/* Overview */}
-      <Text style={[styles.sectionTitle, { color: textColor }]}>{t('stats.overview')}</Text>
+      <ThemedText type="subtitle" style={styles.sectionTitle}>
+        {t('stats.overview')}
+      </ThemedText>
       <View style={styles.statsRow}>
-        <View style={[styles.statCard, { borderColor }]}>
-          <Text style={[styles.statValue, { color: textColor }]}>{stats.totalReviews}</Text>
-          <Text style={[styles.statLabel, { color: mutedColor }]}>{t('stats.total')}</Text>
+        <View style={[styles.statCard, { borderColor: cardBorder, backgroundColor: cardBackground }]}>
+          <ThemedText style={[styles.statValue, { color: textColor }]}>
+            {stats.totalReviews}
+          </ThemedText>
+          <ThemedText style={[styles.statLabel, { color: textMuted }]}>
+            {t('stats.total')}
+          </ThemedText>
         </View>
-        <View style={[styles.statCard, { borderColor }]}>
-          <Text style={[styles.statValue, { color: textColor }]}>{stats.dueNow}</Text>
-          <Text style={[styles.statLabel, { color: mutedColor }]}>{t('stats.dueNow')}</Text>
+        <View style={[styles.statCard, { borderColor: cardBorder, backgroundColor: cardBackground }]}>
+          <ThemedText style={[styles.statValue, { color: textColor }]}>
+            {stats.dueNow}
+          </ThemedText>
+          <ThemedText style={[styles.statLabel, { color: textMuted }]}>
+            {t('stats.dueNow')}
+          </ThemedText>
         </View>
-        <View style={[styles.statCard, { borderColor }]}>
-          <Text style={[styles.statValue, { color: textColor }]}>
+        <View style={[styles.statCard, { borderColor: cardBorder, backgroundColor: cardBackground }]}>
+          <ThemedText style={[styles.statValue, { color: textColor }]}>
             {stats.currentStreak > 0 ? `${stats.currentStreak}d` : '-'}
-          </Text>
-          <Text style={[styles.statLabel, { color: mutedColor }]}>{t('stats.streak')}</Text>
+          </ThemedText>
+          <ThemedText style={[styles.statLabel, { color: textMuted }]}>
+            {t('stats.streak')}
+          </ThemedText>
         </View>
       </View>
 
       {/* Items Progress */}
-      <Text style={[styles.sectionTitle, { color: textColor }]}>{t('stats.itemsProgress')}</Text>
-      <View style={[styles.card, { borderColor }]}>
+      <ThemedText type="subtitle" style={styles.sectionTitle}>
+        {t('stats.itemsProgress')}
+      </ThemedText>
+      <View style={[styles.card, { borderColor: cardBorder, backgroundColor: cardBackground }]}>
         <View style={styles.progressRow}>
-          <View style={[styles.dot, { backgroundColor: '#FF9500' }]} />
-          <Text style={[styles.progressLabel, { color: textColor }]}>{t('stats.learning')}</Text>
-          <Text style={[styles.progressValue, { color: textColor }]}>{stats.learningItems}</Text>
+          <View style={[styles.dot, { backgroundColor: learningColor }]} />
+          <ThemedText style={[styles.progressLabel, { color: textColor }]}>
+            {t('stats.learning')}
+          </ThemedText>
+          <ThemedText style={[styles.progressValue, { color: textColor }]}>
+            {stats.learningItems}
+          </ThemedText>
         </View>
         <View style={styles.progressRow}>
-          <View style={[styles.dot, { backgroundColor: '#007AFF' }]} />
-          <Text style={[styles.progressLabel, { color: textColor }]}>{t('stats.reviewing')}</Text>
-          <Text style={[styles.progressValue, { color: textColor }]}>{stats.reviewingItems}</Text>
+          <View style={[styles.dot, { backgroundColor: reviewingColor }]} />
+          <ThemedText style={[styles.progressLabel, { color: textColor }]}>
+            {t('stats.reviewing')}
+          </ThemedText>
+          <ThemedText style={[styles.progressValue, { color: textColor }]}>
+            {stats.reviewingItems}
+          </ThemedText>
         </View>
         <View style={styles.progressRow}>
-          <View style={[styles.dot, { backgroundColor: '#34C759' }]} />
-          <Text style={[styles.progressLabel, { color: textColor }]}>{t('stats.mastered')}</Text>
-          <Text style={[styles.progressValue, { color: textColor }]}>{stats.masteredItems}</Text>
+          <View style={[styles.dot, { backgroundColor: masteredColor }]} />
+          <ThemedText style={[styles.progressLabel, { color: textColor }]}>
+            {t('stats.mastered')}
+          </ThemedText>
+          <ThemedText style={[styles.progressValue, { color: textColor }]}>
+            {stats.masteredItems}
+          </ThemedText>
         </View>
-        <View style={[styles.progressRow, styles.totalRow]}>
-          <Text style={[styles.progressLabel, { color: textColor }]}>{t('stats.totalActive')}</Text>
-          <Text style={[styles.progressValue, { color: textColor }]}>{stats.activeItems}</Text>
+        <View style={[styles.progressRow, styles.totalRow, { borderTopColor: cardBorder }]}>
+          <ThemedText style={[styles.progressLabel, { color: textColor }]}>
+            {t('stats.totalActive')}
+          </ThemedText>
+          <ThemedText style={[styles.progressValue, { color: textColor }]}>
+            {stats.activeItems}
+          </ThemedText>
         </View>
       </View>
 
       {/* Reviewed */}
-      <Text style={[styles.sectionTitle, { color: textColor }]}>{t('stats.reviewed')}</Text>
-      <View style={[styles.card, { borderColor }]}>
+      <ThemedText type="subtitle" style={styles.sectionTitle}>
+        {t('stats.reviewed')}
+      </ThemedText>
+      <View style={[styles.card, { borderColor: cardBorder, backgroundColor: cardBackground }]}>
         <View style={styles.barsRow}>
           {stats.last7Days.map((day) => {
             const dayLabel = new Date(day.date + 'T00:00:00').toLocaleDateString(locale, { weekday: 'short' });
@@ -145,18 +185,18 @@ export default function StatsScreen() {
                     ]}
                   />
                 </View>
-                <Text style={[styles.countText, { color: textColor }]}>
+                <ThemedText style={[styles.countText, { color: textColor }]}>
                   {day.count > 0 ? day.count : '-'}
-                </Text>
-                <Text
+                </ThemedText>
+                <ThemedText
                   style={[
                     styles.dayText,
-                    { color: isToday ? accentColor : mutedColor },
+                    { color: isToday ? accentColor : textMuted },
                     isToday && styles.dayTextToday,
                   ]}
                 >
                   {dayLabel}
-                </Text>
+                </ThemedText>
               </View>
             );
           })}
@@ -179,12 +219,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   errorText: {
-    color: '#ff4444',
     textAlign: 'center',
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
     marginBottom: 12,
     marginTop: 8,
   },
@@ -195,24 +232,27 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    borderWidth: 1,
-    borderRadius: 12,
+    borderWidth: 2,
+    borderRadius: 8,
     padding: 16,
     alignItems: 'center',
+    ...shadows.sm,
   },
   statValue: {
     fontSize: 28,
-    fontWeight: '700',
+    fontFamily: fontFamilies.bodyBold,
   },
   statLabel: {
     fontSize: 12,
     marginTop: 4,
+    fontFamily: fontFamilies.bodyMedium,
   },
   card: {
-    borderWidth: 1,
-    borderRadius: 12,
+    borderWidth: 2,
+    borderRadius: 8,
     padding: 16,
     marginBottom: 16,
+    ...shadows.sm,
   },
   progressRow: {
     flexDirection: 'row',
@@ -221,7 +261,6 @@ const styles = StyleSheet.create({
   },
   totalRow: {
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#3333',
     marginTop: 8,
     paddingTop: 16,
   },
@@ -234,10 +273,11 @@ const styles = StyleSheet.create({
   progressLabel: {
     flex: 1,
     fontSize: 16,
+    fontFamily: fontFamilies.bodyMedium,
   },
   progressValue: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fontFamilies.bodySemiBold,
   },
   barsRow: {
     flexDirection: 'row',
@@ -260,14 +300,15 @@ const styles = StyleSheet.create({
   },
   countText: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: fontFamilies.bodySemiBold,
     marginTop: 8,
   },
   dayText: {
     fontSize: 11,
     marginTop: 4,
+    fontFamily: fontFamilies.bodyMedium,
   },
   dayTextToday: {
-    fontWeight: '700',
+    fontFamily: fontFamilies.bodyBold,
   },
 });

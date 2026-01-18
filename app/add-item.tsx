@@ -15,6 +15,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useTranslations } from '@/hooks/use-translations';
 import { createItem } from '@/src/lib/items';
+import { fontFamilies } from '@/constants/theme';
 
 export default function AddItemScreen() {
   const { deckId } = useLocalSearchParams<{ deckId: string }>();
@@ -27,7 +28,11 @@ export default function AddItemScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const textColor = useThemeColor({}, 'text');
-  const borderColor = useThemeColor({ light: '#ccc', dark: '#444' }, 'text');
+  const textMuted = useThemeColor({}, 'textMuted');
+  const inputBorder = useThemeColor({}, 'inputBorder');
+  const inputBackground = useThemeColor({}, 'inputBackground');
+  const primaryColor = useThemeColor({}, 'primary');
+  const errorColor = useThemeColor({}, 'error');
   const { t } = useTranslations();
 
   const isValid = title.trim().length > 0 && content.trim().length > 0 && deckId;
@@ -64,11 +69,14 @@ export default function AddItemScreen() {
             {t('addItem.questionLabel')}
           </ThemedText>
           <TextInput
-            style={[styles.input, { color: textColor, borderColor }]}
+            style={[
+              styles.input,
+              { color: textColor, borderColor: inputBorder, backgroundColor: inputBackground },
+            ]}
             value={title}
             onChangeText={setTitle}
             placeholder={t('addItem.questionPlaceholder')}
-            placeholderTextColor="#888"
+            placeholderTextColor={textMuted}
             autoFocus
           />
 
@@ -76,11 +84,15 @@ export default function AddItemScreen() {
             {t('addItem.answerLabel')}
           </ThemedText>
           <TextInput
-            style={[styles.input, styles.textArea, { color: textColor, borderColor }]}
+            style={[
+              styles.input,
+              styles.textArea,
+              { color: textColor, borderColor: inputBorder, backgroundColor: inputBackground },
+            ]}
             value={content}
             onChangeText={setContent}
             placeholder={t('addItem.answerPlaceholder')}
-            placeholderTextColor="#888"
+            placeholderTextColor={textMuted}
             multiline
             numberOfLines={4}
             textAlignVertical="top"
@@ -90,11 +102,14 @@ export default function AddItemScreen() {
             {t('addItem.sourceLabel')}
           </ThemedText>
           <TextInput
-            style={[styles.input, { color: textColor, borderColor }]}
+            style={[
+              styles.input,
+              { color: textColor, borderColor: inputBorder, backgroundColor: inputBackground },
+            ]}
             value={sourceUrl}
             onChangeText={setSourceUrl}
             placeholder="https://..."
-            placeholderTextColor="#888"
+            placeholderTextColor={textMuted}
             keyboardType="url"
             autoCapitalize="none"
             autoCorrect={false}
@@ -104,21 +119,27 @@ export default function AddItemScreen() {
             {t('addItem.tagsLabel')}
           </ThemedText>
           <TextInput
-            style={[styles.input, { color: textColor, borderColor }]}
+            style={[
+              styles.input,
+              { color: textColor, borderColor: inputBorder, backgroundColor: inputBackground },
+            ]}
             value={tags}
             onChangeText={setTags}
             placeholder={t('addItem.tagsPlaceholder')}
-            placeholderTextColor="#888"
+            placeholderTextColor={textMuted}
             autoCapitalize="none"
           />
 
           {error && (
-            <ThemedText style={styles.error}>{error}</ThemedText>
+            <ThemedText style={[styles.error, { color: errorColor }]}>
+              {error}
+            </ThemedText>
           )}
 
           <Pressable
             style={({ pressed }) => [
               styles.button,
+              { backgroundColor: primaryColor },
               !isValid && styles.buttonDisabled,
               pressed && styles.buttonPressed,
             ]}
@@ -152,8 +173,8 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   input: {
-    borderWidth: 1,
-    borderRadius: 8,
+    borderWidth: 2,
+    borderRadius: 6,
     padding: 12,
     fontSize: 16,
   },
@@ -161,14 +182,12 @@ const styles = StyleSheet.create({
     minHeight: 100,
   },
   error: {
-    color: '#ff4444',
     marginTop: 16,
     textAlign: 'center',
   },
   button: {
-    backgroundColor: '#4285F4',
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: 6,
     alignItems: 'center',
     marginTop: 24,
     marginBottom: 40,
@@ -181,7 +200,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontWeight: '600',
     fontSize: 16,
+    fontFamily: fontFamilies.bodySemiBold,
   },
 });

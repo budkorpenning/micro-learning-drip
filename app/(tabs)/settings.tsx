@@ -15,7 +15,7 @@ import {
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Colors } from '@/constants/theme';
+import { Colors, fontFamilies } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTranslations } from '@/hooks/use-translations';
 import { useAuth } from '@/src/context/AuthContext';
@@ -47,6 +47,13 @@ export default function SettingsScreen() {
   const { preference: themePreference, setPreference: setThemePreference } = useThemePreference();
   const { language, setLanguage } = useLanguagePreference();
   const colors = Colors[colorScheme];
+  const primaryColor = colors.primary;
+  const errorColor = colors.error;
+  const successColor = colors.success;
+  const warningColor = colors.warning;
+  const surfaceColor = colors.surfaceElevated1;
+  const errorBannerBackground =
+    colorScheme === 'dark' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.08)';
 
   // Profile state
   const [profile, setProfile] = useState<ProfileSettings | null>(null);
@@ -194,8 +201,10 @@ export default function SettingsScreen() {
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {error && (
-          <View style={styles.errorBanner}>
-            <ThemedText style={styles.errorText}>{error}</ThemedText>
+          <View style={[styles.errorBanner, { backgroundColor: errorBannerBackground }]}>
+            <ThemedText style={[styles.errorText, { color: errorColor }]}>
+              {error}
+            </ThemedText>
           </View>
         )}
 
@@ -204,15 +213,19 @@ export default function SettingsScreen() {
           <ThemedText type="subtitle" style={styles.sectionTitle}>
             {t('settings.titleAppearance')}
           </ThemedText>
-          <View style={[styles.card, { backgroundColor: colors.background }]}>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: surfaceColor, borderColor: colors.cardBorder },
+            ]}>
             <ThemedText style={styles.label}>{t('settings.themeLabel')}</ThemedText>
-            <View style={styles.segmentedControl}>
+            <View style={[styles.segmentedControl, { borderColor: colors.borderSecondary }]}>
               {(['system', 'light', 'dark'] as const).map((option) => (
                 <Pressable
                   key={option}
                   style={[
                     styles.segment,
-                    themePreference === option && styles.segmentActive,
+                    themePreference === option && { backgroundColor: primaryColor },
                   ]}
                   onPress={() => handleThemeChange(option)}>
                   <ThemedText
@@ -221,7 +234,7 @@ export default function SettingsScreen() {
                       themePreference === option && styles.segmentTextActive,
                     ]}
                     lightColor={themePreference === option ? '#fff' : undefined}
-                    darkColor={themePreference === option ? '#000' : undefined}>
+                    darkColor={themePreference === option ? '#fff' : undefined}>
                     {t(`settings.theme.${option}` as const)}
                   </ThemedText>
                 </Pressable>
@@ -230,13 +243,13 @@ export default function SettingsScreen() {
 
             <View style={styles.controlGroup}>
               <ThemedText style={styles.label}>{t('settings.languageLabel')}</ThemedText>
-              <View style={styles.segmentedControl}>
+              <View style={[styles.segmentedControl, { borderColor: colors.borderSecondary }]}>
                 {(['en', 'sv'] as const).map((option) => (
                   <Pressable
                     key={option}
                     style={[
                       styles.segment,
-                      selectedLanguage === option && styles.segmentActive,
+                      selectedLanguage === option && { backgroundColor: primaryColor },
                     ]}
                     onPress={() => handleLanguageChange(option)}>
                     <ThemedText
@@ -245,7 +258,7 @@ export default function SettingsScreen() {
                         selectedLanguage === option && styles.segmentTextActive,
                       ]}
                       lightColor={selectedLanguage === option ? '#fff' : undefined}
-                      darkColor={selectedLanguage === option ? '#000' : undefined}>
+                      darkColor={selectedLanguage === option ? '#fff' : undefined}>
                       {option === 'en'
                         ? t('settings.language.english')
                         : t('settings.language.swedish')}
@@ -262,15 +275,21 @@ export default function SettingsScreen() {
           <ThemedText type="subtitle" style={styles.sectionTitle}>
             {t('settings.titleReminders')}
           </ThemedText>
-          <View style={[styles.card, { backgroundColor: colors.background }]}>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: surfaceColor, borderColor: colors.cardBorder },
+            ]}>
             {/* Notifications toggle */}
             <View style={styles.row}>
               <ThemedText style={styles.label}>{t('settings.notifications')}</ThemedText>
               <Switch
                 value={profile?.notifications_enabled ?? true}
                 onValueChange={handleNotificationsToggle}
-                trackColor={{ false: '#767577', true: '#0a7ea4' }}
-                thumbColor={profile?.notifications_enabled ? '#fff' : '#f4f3f4'}
+                trackColor={{ false: colors.borderSecondary, true: primaryColor }}
+                thumbColor={
+                  profile?.notifications_enabled ? '#fff' : colors.surfaceElevated2
+                }
               />
             </View>
 
@@ -278,7 +297,7 @@ export default function SettingsScreen() {
             <View style={styles.row}>
               <ThemedText style={styles.label}>{t('settings.dailyReminder')}</ThemedText>
               <Pressable
-                style={[styles.timeButton, { borderColor: colors.icon }]}
+                style={[styles.timeButton, { borderColor: colors.inputBorder }]}
                 onPress={() => setShowTimePicker(true)}>
                 <ThemedText>
                   {profile ? formatTimeForDisplay(profile.daily_time) : '--:--'}
@@ -296,7 +315,9 @@ export default function SettingsScreen() {
             )}
             {Platform.OS === 'android' && showTimePicker && (
               <Pressable onPress={() => setShowTimePicker(false)}>
-                <ThemedText style={styles.link}>{t('settings.done')}</ThemedText>
+                <ThemedText style={[styles.link, { color: primaryColor }]}>
+                  {t('settings.done')}
+                </ThemedText>
               </Pressable>
             )}
 
@@ -309,9 +330,9 @@ export default function SettingsScreen() {
                 </ThemedText>
               </View>
               <Pressable
-                style={[styles.smallButton, { borderColor: colors.tint }]}
+                style={[styles.smallButton, { borderColor: primaryColor }]}
                 onPress={handleUpdateTimezone}>
-                <ThemedText style={{ color: colors.tint, fontSize: 13 }}>
+                <ThemedText style={{ color: primaryColor, fontSize: 13 }}>
                   {t('settings.useDevice')}
                 </ThemedText>
               </Pressable>
@@ -325,7 +346,11 @@ export default function SettingsScreen() {
             <ThemedText type="subtitle" style={styles.sectionTitle}>
               {t('settings.titleDiagnostics')}
             </ThemedText>
-            <View style={[styles.card, { backgroundColor: colors.background }]}>
+            <View
+              style={[
+                styles.card,
+                { backgroundColor: surfaceColor, borderColor: colors.cardBorder },
+              ]}>
               <View style={styles.row}>
                 <ThemedText style={styles.label}>
                   {t('settings.diagnostics.pushPermission')}
@@ -336,8 +361,8 @@ export default function SettingsScreen() {
                     {
                       backgroundColor:
                         diagnostics.permissionStatus === 'granted'
-                          ? '#22c55e'
-                          : '#ef4444',
+                          ? successColor
+                          : errorColor,
                     },
                   ]}>
                   {diagnostics.permissionStatus}
@@ -351,7 +376,7 @@ export default function SettingsScreen() {
                   style={[
                     styles.statusBadge,
                     {
-                      backgroundColor: diagnostics.hasToken ? '#22c55e' : '#ef4444',
+                      backgroundColor: diagnostics.hasToken ? successColor : errorColor,
                     },
                   ]}>
                   {diagnostics.hasToken
@@ -367,7 +392,7 @@ export default function SettingsScreen() {
                   style={[
                     styles.statusBadge,
                     {
-                      backgroundColor: Device.isDevice ? '#22c55e' : '#f59e0b',
+                      backgroundColor: Device.isDevice ? successColor : warningColor,
                     },
                   ]}>
                   {Device.isDevice
@@ -384,18 +409,23 @@ export default function SettingsScreen() {
           <ThemedText type="subtitle" style={styles.sectionTitle}>
             {t('settings.titleAccount')}
           </ThemedText>
-          <View style={[styles.card, { backgroundColor: colors.background }]}>
+          <View
+            style={[
+              styles.card,
+              { backgroundColor: surfaceColor, borderColor: colors.cardBorder },
+            ]}>
             {user && (
               <ThemedText style={styles.email}>{user.email}</ThemedText>
             )}
             <Pressable
               style={({ pressed }) => [
                 styles.signOutButton,
+                { borderColor: errorColor },
                 pressed && styles.buttonPressed,
-            ]}
-            onPress={handleSignOut}
-            disabled={isSigningOut}>
-              <ThemedText style={styles.signOutText}>
+              ]}
+              onPress={handleSignOut}
+              disabled={isSigningOut}>
+              <ThemedText style={[styles.signOutText, { color: errorColor }]}>
                 {isSigningOut ? t('settings.signingOut') : t('settings.signOut')}
               </ThemedText>
             </Pressable>
@@ -427,7 +457,8 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   card: {
-    borderRadius: 12,
+    borderRadius: 8,
+    borderWidth: 2,
     padding: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -445,14 +476,14 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
+    fontFamily: fontFamilies.bodyMedium,
   },
   segmentedControl: {
     flexDirection: 'row',
     marginTop: 12,
     borderRadius: 8,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(128, 128, 128, 0.3)',
+    borderWidth: 2,
   },
   controlGroup: {
     marginTop: 16,
@@ -462,20 +493,18 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: 'center',
   },
-  segmentActive: {
-    backgroundColor: '#0a7ea4',
-  },
   segmentText: {
     fontSize: 14,
+    fontFamily: fontFamilies.bodyMedium,
   },
   segmentTextActive: {
-    fontWeight: '600',
+    fontFamily: fontFamilies.bodySemiBold,
   },
   timeButton: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
+    borderRadius: 6,
+    borderWidth: 2,
   },
   timezoneInfo: {
     flex: 1,
@@ -484,17 +513,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
     opacity: 0.7,
     marginTop: 2,
+    fontFamily: fontFamilies.bodyMedium,
   },
   smallButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
-    borderWidth: 1,
+    borderWidth: 2,
   },
   statusBadge: {
     color: '#fff',
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: fontFamilies.bodySemiBold,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
@@ -503,35 +533,31 @@ const styles = StyleSheet.create({
   email: {
     opacity: 0.7,
     marginBottom: 12,
+    fontFamily: fontFamilies.bodyMedium,
   },
   signOutButton: {
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ff4444',
+    borderRadius: 6,
+    borderWidth: 2,
     alignItems: 'center',
   },
   buttonPressed: {
     opacity: 0.6,
   },
   signOutText: {
-    color: '#ff4444',
-    fontWeight: '600',
+    fontFamily: fontFamilies.bodySemiBold,
   },
   link: {
-    color: '#0a7ea4',
     textAlign: 'center',
     marginTop: 8,
   },
   errorBanner: {
-    backgroundColor: '#fef2f2',
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
   },
   errorText: {
-    color: '#dc2626',
     textAlign: 'center',
   },
 });

@@ -15,6 +15,7 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 import { useTranslations } from '@/hooks/use-translations';
 import { listDecks, setDeckArchived } from '@/src/lib/decks';
 import type { DeckWithCount } from '@/src/types/database';
+import { fontFamilies, shadows } from '@/constants/theme';
 
 export default function LibraryScreen() {
   const router = useRouter();
@@ -24,9 +25,13 @@ export default function LibraryScreen() {
   const [error, setError] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
 
-  const borderColor = useThemeColor({ light: '#ddd', dark: '#333' }, 'text');
-  const segmentBg = useThemeColor({ light: '#eee', dark: '#222' }, 'background');
-  const activeSegmentBg = useThemeColor({ light: '#fff', dark: '#444' }, 'background');
+  const cardBorder = useThemeColor({}, 'cardBorder');
+  const cardBackground = useThemeColor({}, 'cardBackground');
+  const segmentBg = useThemeColor({}, 'surfaceElevated2');
+  const activeSegmentBg = useThemeColor({}, 'surfaceElevated1');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const errorColor = useThemeColor({}, 'error');
+  const primaryColor = useThemeColor({}, 'primary');
   const { t } = useTranslations();
 
   const fetchDecks = useCallback(async (archived: boolean, showLoading = true) => {
@@ -73,7 +78,7 @@ export default function LibraryScreen() {
 
   function renderDeck({ item }: { item: DeckWithCount }) {
     return (
-      <View style={[styles.deckCard, { borderColor }]}>
+      <View style={[styles.deckCard, { borderColor: cardBorder, backgroundColor: cardBackground }]}>
         <Pressable
           style={({ pressed }) => [
             styles.deckMain,
@@ -84,7 +89,7 @@ export default function LibraryScreen() {
             <ThemedText type="defaultSemiBold" numberOfLines={1}>
               {item.name}
             </ThemedText>
-            <ThemedText style={styles.cardCount}>
+            <ThemedText style={[styles.cardCount, { color: textSecondary }]}>
               {t(
                 item.card_count === 1
                   ? 'library.cardCount_one'
@@ -98,10 +103,11 @@ export default function LibraryScreen() {
         <Pressable
           style={({ pressed }) => [
             styles.archiveButton,
+            { borderColor: primaryColor },
             pressed && styles.buttonPressed,
           ]}
           onPress={() => handleDeckArchiveToggle(item)}>
-          <ThemedText style={styles.archiveButtonText}>
+          <ThemedText style={[styles.archiveButtonText, { color: primaryColor }]}>
             {item.archived ? t('common.unarchive') : t('common.archive')}
           </ThemedText>
         </Pressable>
@@ -117,7 +123,7 @@ export default function LibraryScreen() {
           {showArchived ? t('library.emptyArchived') : t('library.emptyActive')}
         </ThemedText>
         {!showArchived && (
-          <ThemedText style={styles.emptySubtext}>
+          <ThemedText style={[styles.emptySubtext, { color: textSecondary }]}>
             {t('library.emptyActiveHint')}
           </ThemedText>
         )}
@@ -128,7 +134,9 @@ export default function LibraryScreen() {
   return (
     <ThemedView style={styles.container}>
       {error && (
-        <ThemedText style={styles.error}>{error}</ThemedText>
+        <ThemedText style={[styles.error, { color: errorColor }]}>
+          {error}
+        </ThemedText>
       )}
 
       {/* Segmented control for active/archived decks */}
@@ -177,6 +185,7 @@ export default function LibraryScreen() {
         <Pressable
           style={({ pressed }) => [
             styles.addButton,
+            { backgroundColor: primaryColor },
             pressed && styles.addButtonPressed,
           ]}
           onPress={() => router.push('/create-deck' as never)}>
@@ -218,22 +227,24 @@ const styles = StyleSheet.create({
   },
   segmentText: {
     opacity: 0.6,
+    fontFamily: fontFamilies.bodyMedium,
   },
   segmentTextActive: {
-    fontWeight: '600',
+    fontFamily: fontFamilies.bodySemiBold,
   },
   listContent: {
     padding: 16,
     flexGrow: 1,
   },
   deckCard: {
-    borderWidth: 1,
-    borderRadius: 12,
+    borderWidth: 2,
+    borderRadius: 8,
     padding: 12,
     marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    ...shadows.sm,
   },
   deckMain: {
     flex: 1,
@@ -247,9 +258,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardCount: {
-    opacity: 0.6,
     marginTop: 4,
     fontSize: 14,
+    fontFamily: fontFamilies.bodyMedium,
   },
   chevron: {
     fontSize: 24,
@@ -260,14 +271,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#888',
+    borderWidth: 2,
   },
   buttonPressed: {
     opacity: 0.6,
   },
   archiveButtonText: {
     fontSize: 12,
+    fontFamily: fontFamilies.bodyMedium,
   },
   emptyContainer: {
     flex: 1,
@@ -277,14 +288,14 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: fontFamilies.bodySemiBold,
     marginBottom: 8,
   },
   emptySubtext: {
     opacity: 0.6,
+    fontFamily: fontFamilies.bodyMedium,
   },
   error: {
-    color: '#ff4444',
     textAlign: 'center',
     marginHorizontal: 16,
     marginTop: 16,
@@ -296,7 +307,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#4285F4',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -311,7 +321,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: '#fff',
     fontSize: 28,
-    fontWeight: '300',
+    fontFamily: fontFamilies.body,
     marginTop: -2,
   },
 });

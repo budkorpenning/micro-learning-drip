@@ -16,6 +16,7 @@ import { useTranslations } from '@/hooks/use-translations';
 import { getDeck } from '@/src/lib/decks';
 import { listItemsByDeck, setItemArchived } from '@/src/lib/items';
 import type { Deck, Item } from '@/src/types/database';
+import { fontFamilies, shadows } from '@/constants/theme';
 
 export default function DeckDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -27,9 +28,13 @@ export default function DeckDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
 
-  const borderColor = useThemeColor({ light: '#ddd', dark: '#333' }, 'text');
-  const segmentBg = useThemeColor({ light: '#eee', dark: '#222' }, 'background');
-  const activeSegmentBg = useThemeColor({ light: '#fff', dark: '#444' }, 'background');
+  const cardBorder = useThemeColor({}, 'cardBorder');
+  const cardBackground = useThemeColor({}, 'cardBackground');
+  const segmentBg = useThemeColor({}, 'surfaceElevated2');
+  const activeSegmentBg = useThemeColor({}, 'surfaceElevated1');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const primaryColor = useThemeColor({}, 'primary');
+  const errorColor = useThemeColor({}, 'error');
   const { t } = useTranslations();
 
   const fetchData = useCallback(async (showLoading = true) => {
@@ -83,7 +88,7 @@ export default function DeckDetailScreen() {
         : t('common.archive');
 
     return (
-      <View style={[styles.itemCard, { borderColor }]}>
+      <View style={[styles.itemCard, { borderColor: cardBorder, backgroundColor: cardBackground }]}>
         <View style={styles.itemContent}>
           <ThemedText type="defaultSemiBold" numberOfLines={1}>
             {item.title}
@@ -92,7 +97,7 @@ export default function DeckDetailScreen() {
             {item.content}
           </ThemedText>
           {item.tags.length > 0 && (
-            <ThemedText style={styles.tags}>
+            <ThemedText style={[styles.tags, { color: textSecondary }]}>
               {item.tags.join(', ')}
             </ThemedText>
           )}
@@ -100,12 +105,13 @@ export default function DeckDetailScreen() {
         <Pressable
           style={({ pressed }) => [
             styles.archiveButton,
+            { borderColor: primaryColor },
             pressed && styles.buttonPressed,
             isDeckArchived && styles.archiveButtonDisabled,
           ]}
           onPress={() => handleArchiveToggle(item)}
           disabled={isDeckArchived}>
-          <ThemedText style={styles.archiveButtonText}>
+          <ThemedText style={[styles.archiveButtonText, { color: primaryColor }]}>
             {archiveLabel}
           </ThemedText>
         </Pressable>
@@ -167,7 +173,9 @@ export default function DeckDetailScreen() {
       </View>
 
       {error && (
-        <ThemedText style={styles.error}>{error}</ThemedText>
+        <ThemedText style={[styles.error, { color: errorColor }]}>
+          {error}
+        </ThemedText>
       )}
 
       <FlatList
@@ -186,6 +194,7 @@ export default function DeckDetailScreen() {
         <Pressable
           style={({ pressed }) => [
             styles.addButton,
+            { backgroundColor: primaryColor },
             pressed && styles.addButtonPressed,
           ]}
           onPress={() => router.push(`/add-item?deckId=${id}` as never)}>
@@ -226,9 +235,10 @@ const styles = StyleSheet.create({
   },
   segmentText: {
     opacity: 0.6,
+    fontFamily: fontFamilies.bodyMedium,
   },
   segmentTextActive: {
-    fontWeight: '600',
+    fontFamily: fontFamilies.bodySemiBold,
   },
   listContent: {
     padding: 16,
@@ -236,12 +246,13 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   itemCard: {
-    borderWidth: 1,
-    borderRadius: 12,
+    borderWidth: 2,
+    borderRadius: 8,
     padding: 16,
     marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
+    ...shadows.sm,
   },
   itemContent: {
     flex: 1,
@@ -251,18 +262,18 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     marginTop: 4,
     fontSize: 14,
+    fontFamily: fontFamilies.bodyMedium,
   },
   tags: {
     marginTop: 8,
     fontSize: 12,
-    opacity: 0.5,
+    fontFamily: fontFamilies.bodyMedium,
   },
   archiveButton: {
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#888',
+    borderWidth: 2,
   },
   archiveButtonDisabled: {
     opacity: 0.5,
@@ -272,6 +283,7 @@ const styles = StyleSheet.create({
   },
   archiveButtonText: {
     fontSize: 12,
+    fontFamily: fontFamilies.bodyMedium,
   },
   emptyContainer: {
     flex: 1,
@@ -282,9 +294,9 @@ const styles = StyleSheet.create({
   emptyText: {
     opacity: 0.6,
     textAlign: 'center',
+    fontFamily: fontFamilies.bodyMedium,
   },
   error: {
-    color: '#ff4444',
     textAlign: 'center',
     marginHorizontal: 16,
     marginBottom: 8,
@@ -296,7 +308,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#4285F4',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -311,7 +322,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: '#fff',
     fontSize: 28,
-    fontWeight: '300',
+    fontFamily: fontFamilies.body,
     marginTop: -2,
   },
 });

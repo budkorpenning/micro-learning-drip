@@ -14,6 +14,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useTranslations } from '@/hooks/use-translations';
 import { createDeck } from '@/src/lib/decks';
+import { fontFamilies } from '@/constants/theme';
 
 export default function CreateDeckScreen() {
   const router = useRouter();
@@ -22,7 +23,11 @@ export default function CreateDeckScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const textColor = useThemeColor({}, 'text');
-  const borderColor = useThemeColor({ light: '#ccc', dark: '#444' }, 'text');
+  const textMuted = useThemeColor({}, 'textMuted');
+  const inputBorder = useThemeColor({}, 'inputBorder');
+  const inputBackground = useThemeColor({}, 'inputBackground');
+  const primaryColor = useThemeColor({}, 'primary');
+  const errorColor = useThemeColor({}, 'error');
   const { t } = useTranslations();
 
   const isValid = name.trim().length > 0;
@@ -52,23 +57,26 @@ export default function CreateDeckScreen() {
           {t('createDeck.label')}
         </ThemedText>
         <TextInput
-          style={[styles.input, { color: textColor, borderColor }]}
+          style={[styles.input, { color: textColor, borderColor: inputBorder, backgroundColor: inputBackground }]}
           value={name}
           onChangeText={setName}
           placeholder={t('createDeck.placeholder')}
-          placeholderTextColor="#888"
+          placeholderTextColor={textMuted}
           autoFocus
           returnKeyType="done"
           onSubmitEditing={handleSubmit}
         />
 
         {error && (
-          <ThemedText style={styles.error}>{error}</ThemedText>
+          <ThemedText style={[styles.error, { color: errorColor }]}>
+            {error}
+          </ThemedText>
         )}
 
         <Pressable
           style={({ pressed }) => [
             styles.button,
+            { backgroundColor: primaryColor },
             !isValid && styles.buttonDisabled,
             pressed && styles.buttonPressed,
           ]}
@@ -98,20 +106,18 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   input: {
-    borderWidth: 1,
-    borderRadius: 8,
+    borderWidth: 2,
+    borderRadius: 6,
     padding: 12,
     fontSize: 16,
   },
   error: {
-    color: '#ff4444',
     marginTop: 16,
     textAlign: 'center',
   },
   button: {
-    backgroundColor: '#4285F4',
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: 6,
     alignItems: 'center',
     marginTop: 24,
   },
@@ -123,7 +129,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontWeight: '600',
     fontSize: 16,
+    fontFamily: fontFamilies.bodySemiBold,
   },
 });

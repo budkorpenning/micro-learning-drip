@@ -1,6 +1,7 @@
-import { StyleSheet, Text, type TextProps } from 'react-native';
+import { StyleSheet, Text, type TextProps, type TextStyle } from 'react-native';
 
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { fontFamilies, typography } from '@/constants/theme';
 
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
@@ -15,7 +16,8 @@ export function ThemedText({
   type = 'default',
   ...rest
 }: ThemedTextProps) {
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  const colorName = type === 'link' ? 'primary' : 'text';
+  const color = useThemeColor({ light: lightColor, dark: darkColor }, colorName);
 
   return (
     <Text
@@ -33,28 +35,30 @@ export function ThemedText({
   );
 }
 
+function stripFontWeight(style: TextStyle): TextStyle {
+  const { fontWeight, ...rest } = style;
+  return rest;
+}
+
 const styles = StyleSheet.create({
   default: {
-    fontSize: 16,
-    lineHeight: 24,
+    ...stripFontWeight(typography.body),
+    fontFamily: fontFamilies.body,
   },
   defaultSemiBold: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '600',
+    ...stripFontWeight(typography.body),
+    fontFamily: fontFamilies.bodySemiBold,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    lineHeight: 32,
+    ...stripFontWeight(typography.h1),
+    fontFamily: fontFamilies.headingBold,
   },
   subtitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    ...stripFontWeight(typography.h4),
+    fontFamily: fontFamilies.headingSemiBold,
   },
   link: {
-    lineHeight: 30,
-    fontSize: 16,
-    color: '#0a7ea4',
+    ...stripFontWeight(typography.body),
+    fontFamily: fontFamilies.bodySemiBold,
   },
 });

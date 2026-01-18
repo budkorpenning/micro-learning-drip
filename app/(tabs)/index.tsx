@@ -14,6 +14,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useTranslations } from '@/hooks/use-translations';
 import { getDueItems, getNextDueItem, type DueItem } from '@/src/lib/today';
+import { fontFamilies, shadows } from '@/constants/theme';
 
 export default function TodayScreen() {
   const router = useRouter();
@@ -23,7 +24,11 @@ export default function TodayScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const borderColor = useThemeColor({ light: '#ddd', dark: '#333' }, 'text');
+  const cardBackground = useThemeColor({}, 'cardBackground');
+  const cardBorder = useThemeColor({}, 'cardBorder');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const textMuted = useThemeColor({}, 'textMuted');
+  const errorColor = useThemeColor({}, 'error');
   const { t } = useTranslations();
 
   const fetchData = useCallback(async (showLoading = true) => {
@@ -98,7 +103,7 @@ export default function TodayScreen() {
       <Pressable
         style={({ pressed }) => [
           styles.itemCard,
-          { borderColor },
+          { borderColor: cardBorder, backgroundColor: cardBackground },
           pressed && styles.itemPressed,
         ]}
         onPress={() => handleItemPress(item)}>
@@ -107,7 +112,9 @@ export default function TodayScreen() {
             {item.item.title}
           </ThemedText>
         </View>
-        <ThemedText style={styles.reviewPrompt}>{t('today.reviewPrompt')}</ThemedText>
+        <ThemedText style={[styles.reviewPrompt, { color: textSecondary }]}>
+          {t('today.reviewPrompt')}
+        </ThemedText>
       </Pressable>
     );
   }
@@ -121,11 +128,11 @@ export default function TodayScreen() {
         <ThemedText type="subtitle" style={styles.emptyTitle}>
           {t('today.emptyTitle')}
         </ThemedText>
-        <ThemedText style={styles.emptyText}>
+        <ThemedText style={[styles.emptyText, { color: textSecondary }]}>
           {t('today.emptySubtitle')}
         </ThemedText>
         {nextItem && (
-          <ThemedText style={styles.nextDue}>
+          <ThemedText style={[styles.nextDue, { color: textMuted }]}>
             {t('today.nextUp', {
               title: nextItem.title,
               when: formatRelativeTime(nextItem.dueAt),
@@ -133,7 +140,7 @@ export default function TodayScreen() {
           </ThemedText>
         )}
         {!nextItem && (
-          <ThemedText style={styles.nextDue}>
+          <ThemedText style={[styles.nextDue, { color: textMuted }]}>
             {t('today.noNext')}
           </ThemedText>
         )}
@@ -144,7 +151,9 @@ export default function TodayScreen() {
   return (
     <ThemedView style={styles.container}>
       {error && (
-        <ThemedText style={styles.error}>{error}</ThemedText>
+        <ThemedText style={[styles.error, { color: errorColor }]}>
+          {error}
+        </ThemedText>
       )}
 
       {isLoading ? (
@@ -159,7 +168,7 @@ export default function TodayScreen() {
           ListEmptyComponent={renderEmpty}
           ListHeaderComponent={
             dueItems.length > 0 ? (
-              <ThemedText style={styles.headerText}>
+              <ThemedText style={[styles.headerText, { color: textSecondary }]}>
                 {t(
                   dueItems.length === 1
                     ? 'today.itemsToReview_one'
@@ -194,15 +203,16 @@ const styles = StyleSheet.create({
   },
   headerText: {
     marginBottom: 16,
-    opacity: 0.6,
+    fontFamily: fontFamilies.bodyMedium,
   },
   itemCard: {
-    borderWidth: 1,
-    borderRadius: 12,
+    borderWidth: 2,
+    borderRadius: 8,
     padding: 16,
     marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
+    ...shadows.sm,
   },
   itemPressed: {
     opacity: 0.7,
@@ -212,8 +222,8 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   reviewPrompt: {
-    opacity: 0.5,
     fontSize: 14,
+    fontFamily: fontFamilies.bodyMedium,
   },
   emptyContainer: {
     flex: 1,
@@ -231,17 +241,16 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   emptyText: {
-    opacity: 0.6,
     textAlign: 'center',
     marginBottom: 16,
+    fontFamily: fontFamilies.bodyMedium,
   },
   nextDue: {
-    opacity: 0.5,
     textAlign: 'center',
     fontSize: 14,
+    fontFamily: fontFamilies.bodyMedium,
   },
   error: {
-    color: '#ff4444',
     textAlign: 'center',
     margin: 16,
   },

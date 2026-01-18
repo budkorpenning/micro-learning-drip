@@ -41,7 +41,7 @@ export async function requestNotificationPermissions(): Promise<boolean> {
       name: 'Daily Reminders',
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#4F46E5',
+      lightColor: '#1370e9',
     });
   }
 

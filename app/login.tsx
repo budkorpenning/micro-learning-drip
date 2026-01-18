@@ -3,13 +3,18 @@ import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { useTranslations } from '@/hooks/use-translations';
 import { signInWithGoogle } from '@/src/lib/auth';
+import { fontFamilies } from '@/constants/theme';
 
 export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslations();
+  const primaryColor = useThemeColor({}, 'primary');
+  const textSecondary = useThemeColor({}, 'textSecondary');
+  const errorColor = useThemeColor({}, 'error');
 
   async function handleSignIn() {
     setIsLoading(true);
@@ -29,13 +34,14 @@ export default function LoginScreen() {
       <ThemedText type="title" style={styles.title}>
         {t('login.title')}
       </ThemedText>
-      <ThemedText style={styles.subtitle}>
+      <ThemedText style={[styles.subtitle, { color: textSecondary }]}>
         {t('login.subtitle')}
       </ThemedText>
 
       <Pressable
         style={({ pressed }) => [
           styles.button,
+          { backgroundColor: primaryColor },
           pressed && styles.buttonPressed,
           isLoading && styles.buttonDisabled,
         ]}
@@ -51,7 +57,9 @@ export default function LoginScreen() {
       </Pressable>
 
       {error && (
-        <ThemedText style={styles.error}>{error}</ThemedText>
+        <ThemedText style={[styles.error, { color: errorColor }]}>
+          {error}
+        </ThemedText>
       )}
     </ThemedView>
   );
@@ -68,14 +76,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   subtitle: {
-    opacity: 0.6,
     marginBottom: 40,
+    fontFamily: fontFamilies.bodyMedium,
   },
   button: {
-    backgroundColor: '#4285F4',
     paddingHorizontal: 24,
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: 6,
     minWidth: 200,
     alignItems: 'center',
   },
@@ -87,11 +94,10 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontWeight: '600',
     fontSize: 16,
+    fontFamily: fontFamilies.bodySemiBold,
   },
   error: {
-    color: '#ff4444',
     marginTop: 16,
     textAlign: 'center',
   },

@@ -3,14 +3,13 @@
  * Based on simplified SM-2 algorithm
  */
 
-export type Grade = 1 | 2 | 3 | 4 | 5;
+export type Grade = 1 | 2 | 3 | 4;
 
 export const GRADE_LABELS: Record<Grade, string> = {
-  1: 'Again',
+  1: 'Forgot',
   2: 'Hard',
   3: 'Good',
   4: 'Easy',
-  5: 'Perfect',
 };
 
 interface ScheduleInput {
@@ -30,11 +29,10 @@ const MIN_EASE_FACTOR = 1.3;
  * Calculate the next interval and ease factor based on grade
  *
  * Grade effects:
- * 1 (Again):   interval = 1,             ease -= 0.20
+ * 1 (Forgot):  interval = 1,             ease -= 0.20
  * 2 (Hard):    interval = max(2, ×1.2),  ease -= 0.10
  * 3 (Good):    interval = max(3, ×1.5),  ease += 0
- * 4 (Easy):    interval = max(4, ×2.0),  ease += 0.10
- * 5 (Perfect): interval = max(5, ×2.5),  ease += 0.15
+ * 4 (Easy):    interval = max(5, ×2.5),  ease += 0.15
  */
 export function calculateNextSchedule(input: ScheduleInput): ScheduleOutput {
   const { intervalDays, easeFactor, grade } = input;
@@ -43,7 +41,7 @@ export function calculateNextSchedule(input: ScheduleInput): ScheduleOutput {
   let newEaseFactor: number;
 
   switch (grade) {
-    case 1: // Again
+    case 1: // Forgot
       newInterval = 1;
       newEaseFactor = easeFactor - 0.2;
       break;
@@ -59,11 +57,6 @@ export function calculateNextSchedule(input: ScheduleInput): ScheduleOutput {
       break;
 
     case 4: // Easy
-      newInterval = Math.max(4, Math.round(intervalDays * 2.0));
-      newEaseFactor = easeFactor + 0.1;
-      break;
-
-    case 5: // Perfect
       newInterval = Math.max(5, Math.round(intervalDays * 2.5));
       newEaseFactor = easeFactor + 0.15;
       break;

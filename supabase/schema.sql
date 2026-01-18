@@ -184,7 +184,7 @@ create table public.reviews (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   item_id uuid not null references public.items(id) on delete cascade,
-  rating int not null check (rating between 1 and 5),
+  rating int not null check (rating between 1 and 4),
   interval_days int not null,
   reviewed_at timestamptz not null default now()
 );

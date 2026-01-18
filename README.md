@@ -35,6 +35,12 @@ npm run reset-project
 
 This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
+## Database patches
+
+If you update the Supabase schema, run the latest patch in the Supabase SQL Editor.
+
+- `supabase/patch-005-review-rating-1-4.sql` migrates review ratings from 1-5 to 1-4.
+
 ## Learn more
 
 To learn more about developing your project with Expo, look at the following resources:

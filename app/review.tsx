@@ -18,11 +18,10 @@ import { GRADE_LABELS, type Grade } from '@/src/lib/scheduling';
 import type { Item } from '@/src/types/database';
 
 const GRADE_COLORS: Record<Grade, string> = {
-  1: '#E53935', // Again - red
+  1: '#E53935', // Forgot - red
   2: '#FB8C00', // Hard - orange
   3: '#FDD835', // Good - yellow
-  4: '#7CB342', // Easy - light green
-  5: '#43A047', // Perfect - green
+  4: '#43A047', // Easy - green
 };
 
 export default function ReviewScreen() {
@@ -180,7 +179,7 @@ export default function ReviewScreen() {
             How well did you remember this?
           </ThemedText>
           <View style={styles.gradeButtons}>
-            {([1, 2, 3, 4, 5] as Grade[]).map((grade) => (
+            {([1, 2, 3, 4] as Grade[]).map((grade) => (
               <Pressable
                 key={grade}
                 style={({ pressed }) => [

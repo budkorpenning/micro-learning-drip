@@ -4,18 +4,20 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   TextInput,
+  View,
 } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { AmbientBackground } from '@/components/ui/AmbientBackground';
+import { GradientButton } from '@/components/ui/GradientButton';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useTranslations } from '@/hooks/use-translations';
 import { createItem } from '@/src/lib/items';
-import { fontFamilies } from '@/constants/theme';
+import { borderRadius, fontFamilies } from '@/constants/theme';
 
 export default function AddItemScreen() {
   const { deckId } = useLocalSearchParams<{ deckId: string }>();
@@ -29,6 +31,7 @@ export default function AddItemScreen() {
 
   const textColor = useThemeColor({}, 'text');
   const textMuted = useThemeColor({}, 'textMuted');
+  const textSecondary = useThemeColor({}, 'textSecondary');
   const inputBorder = useThemeColor({}, 'inputBorder');
   const inputBackground = useThemeColor({}, 'inputBackground');
   const primaryColor = useThemeColor({}, 'primary');
@@ -62,9 +65,17 @@ export default function AddItemScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <ThemedView style={styles.inner}>
-        <ScrollView style={styles.scroll} keyboardShouldPersistTaps="handled">
+        <AmbientBackground intensity="subtle" />
+
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
           <ThemedText type="subtitle" style={styles.label}>
             {t('addItem.questionLabel')}
           </ThemedText>
@@ -100,6 +111,7 @@ export default function AddItemScreen() {
 
           <ThemedText type="subtitle" style={styles.label}>
             {t('addItem.sourceLabel')}
+            <ThemedText style={[styles.optional, { color: textSecondary }]}> ({t('common.optional')})</ThemedText>
           </ThemedText>
           <TextInput
             style={[
@@ -117,6 +129,7 @@ export default function AddItemScreen() {
 
           <ThemedText type="subtitle" style={styles.label}>
             {t('addItem.tagsLabel')}
+            <ThemedText style={[styles.optional, { color: textSecondary }]}> ({t('common.optional')})</ThemedText>
           </ThemedText>
           <TextInput
             style={[
@@ -131,26 +144,24 @@ export default function AddItemScreen() {
           />
 
           {error && (
-            <ThemedText style={[styles.error, { color: errorColor }]}>
-              {error}
-            </ThemedText>
+            <View style={[styles.errorBanner, { backgroundColor: `${errorColor}20` }]}>
+              <ThemedText style={[styles.errorText, { color: errorColor }]}>
+                {error}
+              </ThemedText>
+            </View>
           )}
 
-          <Pressable
-            style={({ pressed }) => [
-              styles.button,
-              { backgroundColor: primaryColor },
-              !isValid && styles.buttonDisabled,
-              pressed && styles.buttonPressed,
-            ]}
-            onPress={handleSubmit}
-            disabled={!isValid || isSubmitting}>
-            {isSubmitting ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <ThemedText style={styles.buttonText}>{t('addItem.button')}</ThemedText>
-            )}
-          </Pressable>
+          {isSubmitting ? (
+            <ActivityIndicator size="large" color={primaryColor} style={styles.loader} />
+          ) : (
+            <GradientButton
+              title={t('addItem.button')}
+              onPress={handleSubmit}
+              disabled={!isValid}
+              size="lg"
+              style={styles.button}
+            />
+          )}
         </ScrollView>
       </ThemedView>
     </KeyboardAvoidingView>
@@ -166,41 +177,42 @@ const styles = StyleSheet.create({
   },
   scroll: {
     flex: 1,
-    padding: 20,
+  },
+  scrollContent: {
+    padding: 24,
+    paddingBottom: 48,
   },
   label: {
     marginBottom: 8,
-    marginTop: 16,
+    marginTop: 20,
+  },
+  optional: {
+    fontSize: 14,
+    fontFamily: fontFamilies.body,
   },
   input: {
-    borderWidth: 2,
-    borderRadius: 6,
-    padding: 12,
+    borderWidth: 1,
+    borderRadius: borderRadius.lg,
+    padding: 16,
     fontSize: 16,
+    fontFamily: fontFamilies.body,
   },
   textArea: {
-    minHeight: 100,
+    minHeight: 120,
   },
-  error: {
-    marginTop: 16,
+  errorBanner: {
+    marginTop: 20,
+    padding: 12,
+    borderRadius: borderRadius.md,
+  },
+  errorText: {
     textAlign: 'center',
+    fontFamily: fontFamilies.bodyMedium,
   },
   button: {
-    paddingVertical: 14,
-    borderRadius: 6,
-    alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 40,
+    marginTop: 32,
   },
-  buttonPressed: {
-    opacity: 0.8,
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontFamily: fontFamilies.bodySemiBold,
+  loader: {
+    marginTop: 32,
   },
 });

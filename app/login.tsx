@@ -1,20 +1,23 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { AmbientBackground } from '@/components/ui/AmbientBackground';
+import { GradientButton } from '@/components/ui/GradientButton';
+import { GradientText } from '@/components/ui/GradientText';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useTranslations } from '@/hooks/use-translations';
 import { signInWithGoogle } from '@/src/lib/auth';
-import { fontFamilies } from '@/constants/theme';
+import { borderRadius, fontFamilies } from '@/constants/theme';
 
 export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslations();
-  const primaryColor = useThemeColor({}, 'primary');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const errorColor = useThemeColor({}, 'error');
+  const primaryColor = useThemeColor({}, 'primary');
 
   async function handleSignIn() {
     setIsLoading(true);
@@ -31,36 +34,35 @@ export default function LoginScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title" style={styles.title}>
-        {t('login.title')}
-      </ThemedText>
-      <ThemedText style={[styles.subtitle, { color: textSecondary }]}>
-        {t('login.subtitle')}
-      </ThemedText>
+      <AmbientBackground intensity="strong" />
 
-      <Pressable
-        style={({ pressed }) => [
-          styles.button,
-          { backgroundColor: primaryColor },
-          pressed && styles.buttonPressed,
-          isLoading && styles.buttonDisabled,
-        ]}
-        onPress={handleSignIn}
-        disabled={isLoading}>
-        {isLoading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <ThemedText style={styles.buttonText}>
-            {t('login.signIn')}
-          </ThemedText>
-        )}
-      </Pressable>
-
-      {error && (
-        <ThemedText style={[styles.error, { color: errorColor }]}>
-          {error}
+      <View style={styles.content}>
+        <GradientText size="displayLarge" style={styles.title}>
+          {t('login.title')}
+        </GradientText>
+        <ThemedText style={[styles.subtitle, { color: textSecondary }]}>
+          {t('login.subtitle')}
         </ThemedText>
-      )}
+
+        {isLoading ? (
+          <ActivityIndicator size="large" color={primaryColor} style={styles.loader} />
+        ) : (
+          <GradientButton
+            title={t('login.signIn')}
+            onPress={handleSignIn}
+            size="lg"
+            style={styles.button}
+          />
+        )}
+
+        {error && (
+          <View style={[styles.errorBanner, { backgroundColor: `${errorColor}20` }]}>
+            <ThemedText style={[styles.errorText, { color: errorColor }]}>
+              {error}
+            </ThemedText>
+          </View>
+        )}
+      </View>
     </ThemedView>
   );
 }
@@ -68,37 +70,37 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  content: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: 24,
   },
   title: {
-    marginBottom: 8,
+    marginBottom: 12,
+    textAlign: 'center',
   },
   subtitle: {
-    marginBottom: 40,
+    marginBottom: 48,
     fontFamily: fontFamilies.bodyMedium,
+    fontSize: 16,
+    textAlign: 'center',
   },
   button: {
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 6,
-    minWidth: 200,
-    alignItems: 'center',
+    minWidth: 240,
   },
-  buttonPressed: {
-    opacity: 0.8,
+  loader: {
+    marginVertical: 20,
   },
-  buttonDisabled: {
-    opacity: 0.6,
+  errorBanner: {
+    marginTop: 24,
+    padding: 16,
+    borderRadius: borderRadius.md,
+    maxWidth: 320,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontFamily: fontFamilies.bodySemiBold,
-  },
-  error: {
-    marginTop: 16,
+  errorText: {
     textAlign: 'center',
+    fontFamily: fontFamilies.bodyMedium,
   },
 });

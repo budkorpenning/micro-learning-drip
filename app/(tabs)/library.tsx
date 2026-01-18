@@ -1,21 +1,26 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Platform,
   Pressable,
   RefreshControl,
   StyleSheet,
   View,
 } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { AmbientBackground } from '@/components/ui/AmbientBackground';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useTranslations } from '@/hooks/use-translations';
 import { listDecks, setDeckArchived } from '@/src/lib/decks';
 import type { DeckWithCount } from '@/src/types/database';
-import { fontFamilies, shadows } from '@/constants/theme';
+import { borderRadius, fontFamilies, gradient, shadows } from '@/constants/theme';
 
 export default function LibraryScreen() {
   const router = useRouter();
@@ -27,8 +32,6 @@ export default function LibraryScreen() {
 
   const cardBorder = useThemeColor({}, 'cardBorder');
   const cardBackground = useThemeColor({}, 'cardBackground');
-  const segmentBg = useThemeColor({}, 'surfaceElevated2');
-  const activeSegmentBg = useThemeColor({}, 'surfaceElevated1');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const errorColor = useThemeColor({}, 'error');
   const primaryColor = useThemeColor({}, 'primary');
@@ -70,48 +73,63 @@ export default function LibraryScreen() {
     }
   }
 
-  function handleSegmentChange(archived: boolean) {
+  function handleSegmentChange(value: string) {
+    const archived = value === 'archived';
     if (archived === showArchived) return;
     setShowArchived(archived);
     fetchDecks(archived);
   }
 
-  function renderDeck({ item }: { item: DeckWithCount }) {
+  function renderDeck({ item, index }: { item: DeckWithCount; index: number }) {
+    // Disable entry animations on Android due to shadow rendering issues
+    const entering = Platform.OS === 'ios' ? FadeInUp.duration(300).delay(index * 50) : undefined;
+
     return (
-      <View style={[styles.deckCard, { borderColor: cardBorder, backgroundColor: cardBackground }]}>
-        <Pressable
-          style={({ pressed }) => [
-            styles.deckMain,
-            pressed && styles.deckMainPressed,
-          ]}
-          onPress={() => router.push(`/deck/${item.id}` as never)}>
-          <View style={styles.deckContent}>
-            <ThemedText type="defaultSemiBold" numberOfLines={1}>
-              {item.name}
+      <Animated.View entering={entering}>
+        <View style={[styles.deckCard, { borderColor: cardBorder, backgroundColor: cardBackground }]}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.deckMain,
+              pressed && styles.deckMainPressed,
+            ]}
+            onPress={() => router.push(`/deck/${item.id}` as never)}
+          >
+            <View style={styles.deckContent}>
+              <ThemedText type="defaultSemiBold" numberOfLines={1}>
+                {item.name}
+              </ThemedText>
+              <ThemedText style={[styles.cardCount, { color: textSecondary }]}>
+                {t(
+                  item.card_count === 1
+                    ? 'library.cardCount_one'
+                    : 'library.cardCount_other',
+                  { count: item.card_count }
+                )}
+              </ThemedText>
+            </View>
+            <LinearGradient
+              colors={gradient.colors}
+              start={gradient.start}
+              end={gradient.end}
+              style={styles.chevronContainer}
+            >
+              <ThemedText style={styles.chevron}>{'>'}</ThemedText>
+            </LinearGradient>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.archiveButton,
+              { borderColor: primaryColor },
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={() => handleDeckArchiveToggle(item)}
+          >
+            <ThemedText style={[styles.archiveButtonText, { color: primaryColor }]}>
+              {item.archived ? t('common.unarchive') : t('common.archive')}
             </ThemedText>
-            <ThemedText style={[styles.cardCount, { color: textSecondary }]}>
-              {t(
-                item.card_count === 1
-                  ? 'library.cardCount_one'
-                  : 'library.cardCount_other',
-                { count: item.card_count }
-              )}
-            </ThemedText>
-          </View>
-          <ThemedText style={styles.chevron}>›</ThemedText>
-        </Pressable>
-        <Pressable
-          style={({ pressed }) => [
-            styles.archiveButton,
-            { borderColor: primaryColor },
-            pressed && styles.buttonPressed,
-          ]}
-          onPress={() => handleDeckArchiveToggle(item)}>
-          <ThemedText style={[styles.archiveButtonText, { color: primaryColor }]}>
-            {item.archived ? t('common.unarchive') : t('common.archive')}
-          </ThemedText>
-        </Pressable>
-      </View>
+          </Pressable>
+        </View>
+      </Animated.View>
     );
   }
 
@@ -133,39 +151,31 @@ export default function LibraryScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <AmbientBackground intensity="subtle" />
+
       {error && (
-        <ThemedText style={[styles.error, { color: errorColor }]}>
-          {error}
-        </ThemedText>
+        <View style={[styles.errorBanner, { backgroundColor: `${errorColor}20` }]}>
+          <ThemedText style={[styles.errorText, { color: errorColor }]}>
+            {error}
+          </ThemedText>
+        </View>
       )}
 
       {/* Segmented control for active/archived decks */}
-      <View style={[styles.segmentContainer, { backgroundColor: segmentBg }]}>
-        <Pressable
-          style={[
-            styles.segment,
-            !showArchived && [styles.segmentActive, { backgroundColor: activeSegmentBg }],
+      <View style={styles.segmentWrapper}>
+        <SegmentedControl
+          options={[
+            { value: 'active', label: t('common.active') },
+            { value: 'archived', label: t('common.archived') },
           ]}
-          onPress={() => handleSegmentChange(false)}>
-          <ThemedText style={!showArchived ? styles.segmentTextActive : styles.segmentText}>
-            {t('common.active')}
-          </ThemedText>
-        </Pressable>
-        <Pressable
-          style={[
-            styles.segment,
-            showArchived && [styles.segmentActive, { backgroundColor: activeSegmentBg }],
-          ]}
-          onPress={() => handleSegmentChange(true)}>
-          <ThemedText style={showArchived ? styles.segmentTextActive : styles.segmentText}>
-            {t('common.archived')}
-          </ThemedText>
-        </Pressable>
+          selected={showArchived ? 'archived' : 'active'}
+          onSelect={handleSegmentChange}
+        />
       </View>
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color={primaryColor} />
         </View>
       ) : (
         <FlatList
@@ -174,22 +184,34 @@ export default function LibraryScreen() {
           renderItem={renderDeck}
           ListEmptyComponent={renderEmpty}
           contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={primaryColor}
+            />
           }
         />
       )}
 
-      {/* Add deck button */}
+      {/* Add deck FAB */}
       {!showArchived && (
         <Pressable
           style={({ pressed }) => [
-            styles.addButton,
-            { backgroundColor: primaryColor },
-            pressed && styles.addButtonPressed,
+            styles.fab,
+            pressed && styles.fabPressed,
           ]}
-          onPress={() => router.push('/create-deck' as never)}>
-          <ThemedText style={styles.addButtonText}>+</ThemedText>
+          onPress={() => router.push('/create-deck' as never)}
+        >
+          <LinearGradient
+            colors={gradient.colors}
+            start={gradient.start}
+            end={gradient.end}
+            style={styles.fabGradient}
+          >
+            <ThemedText style={styles.fabText}>+</ThemedText>
+          </LinearGradient>
         </Pressable>
       )}
     </ThemedView>
@@ -205,41 +227,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  segmentContainer: {
-    flexDirection: 'row',
-    margin: 16,
-    marginBottom: 0,
-    borderRadius: 8,
-    padding: 4,
-  },
-  segment: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-    borderRadius: 6,
-  },
-  segmentActive: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  segmentText: {
-    opacity: 0.6,
-    fontFamily: fontFamilies.bodyMedium,
-  },
-  segmentTextActive: {
-    fontFamily: fontFamilies.bodySemiBold,
+  segmentWrapper: {
+    marginHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 8,
   },
   listContent: {
-    padding: 16,
+    padding: 20,
+    paddingTop: 12,
     flexGrow: 1,
   },
   deckCard: {
-    borderWidth: 2,
-    borderRadius: 8,
-    padding: 12,
+    borderWidth: 1,
+    borderRadius: borderRadius.xl,
+    padding: 16,
     marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
@@ -262,16 +263,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: fontFamilies.bodyMedium,
   },
-  chevron: {
-    fontSize: 24,
-    opacity: 0.4,
+  chevronContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: borderRadius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginLeft: 8,
   },
+  chevron: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontFamily: fontFamilies.bodyBold,
+  },
   archiveButton: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 6,
-    borderWidth: 2,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
   },
   buttonPressed: {
     opacity: 0.6,
@@ -292,35 +301,41 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   emptySubtext: {
-    opacity: 0.6,
     fontFamily: fontFamilies.bodyMedium,
   },
-  error: {
-    textAlign: 'center',
-    marginHorizontal: 16,
+  errorBanner: {
+    marginHorizontal: 20,
     marginTop: 16,
+    padding: 12,
+    borderRadius: borderRadius.md,
   },
-  addButton: {
+  errorText: {
+    textAlign: 'center',
+    fontSize: 14,
+    fontFamily: fontFamilies.bodyMedium,
+  },
+  fab: {
     position: 'absolute',
     bottom: 24,
     right: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    ...shadows.lg,
+    shadowColor: '#06b6d4',
+    shadowOpacity: 0.4,
+  },
+  fabPressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.95 }],
+  },
+  fabGradient: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
   },
-  addButtonPressed: {
-    opacity: 0.8,
-  },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 28,
+  fabText: {
+    color: '#ffffff',
+    fontSize: 32,
     fontFamily: fontFamilies.body,
     marginTop: -2,
   },

@@ -3,21 +3,30 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+
+// Disable entry animations on Android due to shadow rendering issues during animation
+const shouldAnimate = Platform.OS === 'ios';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { AmbientBackground } from '@/components/ui/AmbientBackground';
+import { GradientButton } from '@/components/ui/GradientButton';
+import { GradientText } from '@/components/ui/GradientText';
+import { RatingButtonRow } from '@/components/ui/RatingButton';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useTranslations } from '@/hooks/use-translations';
 import { supabase } from '@/src/lib/supabase';
 import { submitReview } from '@/src/lib/today';
 import { type Grade } from '@/src/lib/scheduling';
 import type { Item } from '@/src/types/database';
-import { fontFamilies } from '@/constants/theme';
+import { borderRadius, fontFamilies } from '@/constants/theme';
 
 export default function ReviewScreen() {
   const router = useRouter();
@@ -34,18 +43,18 @@ export default function ReviewScreen() {
   const [error, setError] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(false);
 
-  const borderColor = useThemeColor({}, 'borderPrimary');
+  const cardBorder = useThemeColor({}, 'cardBorder');
+  const cardBackground = useThemeColor({}, 'cardBackground');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const primaryColor = useThemeColor({}, 'primary');
   const errorColor = useThemeColor({}, 'error');
-  const warningColor = useThemeColor({}, 'warning');
-  const successColor = useThemeColor({}, 'success');
   const { t } = useTranslations();
-  const gradeColors: Record<Grade, string> = {
-    1: errorColor,
-    2: warningColor,
-    3: primaryColor,
-    4: successColor,
+
+  const gradeLabels: Record<Grade, string> = {
+    1: t('review.grade.forgot'),
+    2: t('review.grade.hard'),
+    3: t('review.grade.good'),
+    4: t('review.grade.easy'),
   };
 
   // Reset revealed state when itemId changes
@@ -103,25 +112,11 @@ export default function ReviewScreen() {
     }
   }
 
-  function gradeLabel(grade: Grade): string {
-    switch (grade) {
-      case 1:
-        return t('review.grade.forgot');
-      case 2:
-        return t('review.grade.hard');
-      case 3:
-        return t('review.grade.good');
-      case 4:
-        return t('review.grade.easy');
-      default:
-        return String(grade);
-    }
-  }
-
   if (isLoading) {
     return (
       <ThemedView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" />
+        <AmbientBackground intensity="subtle" />
+        <ActivityIndicator size="large" color={primaryColor} />
       </ThemedView>
     );
   }
@@ -129,50 +124,73 @@ export default function ReviewScreen() {
   if (!item) {
     return (
       <ThemedView style={styles.container}>
-        <ThemedText style={[styles.error, { color: errorColor }]}>
-          {error || t('review.notFound')}
-        </ThemedText>
+        <AmbientBackground intensity="subtle" />
+        <View style={styles.errorContainer}>
+          <ThemedText style={[styles.error, { color: errorColor }]}>
+            {error || t('review.notFound')}
+          </ThemedText>
+        </View>
       </ThemedView>
     );
   }
 
   return (
     <ThemedView style={styles.container}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-        <ThemedText type="subtitle" style={styles.label}>
-          {t('review.question')}
-        </ThemedText>
-        <ThemedText type="title" style={styles.title}>
-          {item.title}
-        </ThemedText>
+      <AmbientBackground intensity="medium" />
 
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Question Section */}
+        <Animated.View entering={shouldAnimate ? FadeInUp.duration(400) : undefined}>
+          <ThemedText style={[styles.label, { color: textSecondary }]}>
+            {t('review.question')}
+          </ThemedText>
+          <ThemedText type="displayMedium" style={styles.questionText}>
+            {item.title}
+          </ThemedText>
+        </Animated.View>
+
+        {/* Reveal Button or Answer */}
         {revealed ? (
-          <>
-            <ThemedText type="subtitle" style={styles.label}>
+          <Animated.View entering={shouldAnimate ? FadeInDown.duration(500).delay(100) : undefined}>
+            <View style={styles.divider} />
+
+            <ThemedText style={[styles.label, { color: textSecondary }]}>
               {t('review.answer')}
             </ThemedText>
-            <ThemedText style={styles.content}>
+            <GradientText size="displaySmall" style={styles.answerText}>
               {item.content}
-            </ThemedText>
+            </GradientText>
 
+            {/* Source URL */}
             {item.source_url && (
               <Pressable
                 style={({ pressed }) => [
                   styles.sourceLink,
-                  { borderColor },
+                  { borderColor: cardBorder, backgroundColor: cardBackground },
                   pressed && styles.linkPressed,
                 ]}
                 onPress={() => handleOpenUrl(item.source_url!)}>
-                <ThemedText style={[styles.sourceLinkText, { color: primaryColor }]} numberOfLines={1}>
+                <ThemedText
+                  style={[styles.sourceLinkText, { color: primaryColor }]}
+                  numberOfLines={1}
+                >
                   {item.source_url}
                 </ThemedText>
               </Pressable>
             )}
 
+            {/* Tags */}
             {item.tags.length > 0 && (
               <View style={styles.tagsContainer}>
                 {item.tags.map((tag, index) => (
-                  <View key={index} style={[styles.tag, { borderColor }]}>
+                  <View
+                    key={index}
+                    style={[styles.tag, { borderColor: cardBorder, backgroundColor: cardBackground }]}
+                  >
                     <ThemedText style={[styles.tagText, { color: textSecondary }]}>
                       {tag}
                     </ThemedText>
@@ -180,51 +198,45 @@ export default function ReviewScreen() {
                 ))}
               </View>
             )}
-          </>
+          </Animated.View>
         ) : (
-          <Pressable
-            style={({ pressed }) => [
-              styles.revealButton,
-              { backgroundColor: primaryColor },
-              pressed && styles.revealButtonPressed,
-            ]}
-            onPress={() => setRevealed(true)}>
-            <ThemedText style={styles.revealButtonText}>{t('review.reveal')}</ThemedText>
-          </Pressable>
+          <Animated.View
+            entering={shouldAnimate ? FadeInUp.duration(400).delay(200) : undefined}
+            style={styles.revealContainer}
+          >
+            <GradientButton
+              title={t('review.reveal')}
+              onPress={() => setRevealed(true)}
+              size="lg"
+            />
+          </Animated.View>
         )}
       </ScrollView>
 
+      {/* Error Banner */}
       {error && (
-        <ThemedText style={[styles.error, { color: errorColor }]}>
-          {error}
-        </ThemedText>
+        <View style={[styles.errorBanner, { backgroundColor: `${errorColor}20` }]}>
+          <ThemedText style={[styles.errorText, { color: errorColor }]}>
+            {error}
+          </ThemedText>
+        </View>
       )}
 
+      {/* Rating Buttons */}
       {revealed && (
-        <View style={styles.gradeContainer}>
-          <ThemedText style={styles.gradePrompt}>
+        <Animated.View
+          entering={shouldAnimate ? FadeInDown.duration(400).delay(200) : undefined}
+          style={styles.gradeContainer}
+        >
+          <ThemedText style={[styles.gradePrompt, { color: textSecondary }]}>
             {t('review.prompt')}
           </ThemedText>
-          <View style={styles.gradeButtons}>
-            {([1, 2, 3, 4] as Grade[]).map((grade) => (
-              <Pressable
-                key={grade}
-                style={({ pressed }) => [
-                  styles.gradeButton,
-                  { backgroundColor: gradeColors[grade] },
-                  pressed && styles.gradeButtonPressed,
-                  isSubmitting && styles.gradeButtonDisabled,
-                ]}
-                onPress={() => handleGrade(grade)}
-                disabled={isSubmitting}>
-                <ThemedText style={styles.gradeNumber}>{grade}</ThemedText>
-                <ThemedText style={styles.gradeLabel}>
-                  {gradeLabel(grade)}
-                </ThemedText>
-              </Pressable>
-            ))}
-          </View>
-        </View>
+          <RatingButtonRow
+            onGrade={handleGrade}
+            disabled={isSubmitting}
+            labels={gradeLabels}
+          />
+        </Animated.View>
       )}
     </ThemedView>
   );
@@ -239,49 +251,53 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  errorContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
   scroll: {
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
+    padding: 24,
+    paddingTop: 32,
   },
   label: {
-    opacity: 0.6,
-    marginBottom: 8,
-    marginTop: 16,
+    fontSize: 13,
+    fontFamily: fontFamilies.bodyMedium,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 12,
   },
-  title: {
-    marginBottom: 16,
+  questionText: {
+    marginBottom: 24,
   },
-  revealButton: {
-    paddingVertical: 14,
-    borderRadius: 6,
+  divider: {
+    height: 1,
+    backgroundColor: 'rgba(148, 163, 184, 0.2)',
+    marginVertical: 32,
+  },
+  answerText: {
+    marginBottom: 24,
+  },
+  revealContainer: {
+    marginTop: 48,
     alignItems: 'center',
-    marginTop: 32,
-  },
-  revealButtonPressed: {
-    opacity: 0.8,
-  },
-  revealButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontFamily: fontFamilies.bodySemiBold,
-  },
-  content: {
-    fontSize: 18,
-    lineHeight: 28,
   },
   sourceLink: {
-    marginTop: 20,
-    padding: 12,
-    borderWidth: 2,
-    borderRadius: 6,
+    marginTop: 24,
+    padding: 16,
+    borderWidth: 1,
+    borderRadius: borderRadius.lg,
   },
   linkPressed: {
     opacity: 0.7,
   },
   sourceLinkText: {
     fontSize: 14,
+    fontFamily: fontFamilies.bodyMedium,
   },
   tagsContainer: {
     flexDirection: 'row',
@@ -290,57 +306,37 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tag: {
-    borderWidth: 2,
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    borderWidth: 1,
+    borderRadius: borderRadius.full,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
   },
   tagText: {
     fontSize: 12,
-    opacity: 0.7,
     fontFamily: fontFamilies.bodyMedium,
   },
   error: {
     textAlign: 'center',
-    marginHorizontal: 20,
-    marginBottom: 8,
+  },
+  errorBanner: {
+    marginHorizontal: 24,
+    marginBottom: 16,
+    padding: 12,
+    borderRadius: borderRadius.md,
+  },
+  errorText: {
+    textAlign: 'center',
+    fontSize: 14,
+    fontFamily: fontFamilies.bodyMedium,
   },
   gradeContainer: {
-    padding: 20,
+    padding: 24,
     paddingBottom: 40,
   },
   gradePrompt: {
     textAlign: 'center',
     marginBottom: 16,
-    opacity: 0.7,
-    fontFamily: fontFamilies.bodyMedium,
-  },
-  gradeButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  gradeButton: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderRadius: 6,
-  },
-  gradeButtonPressed: {
-    opacity: 0.8,
-  },
-  gradeButtonDisabled: {
-    opacity: 0.5,
-  },
-  gradeNumber: {
-    color: '#fff',
-    fontSize: 18,
-    fontFamily: fontFamilies.bodyBold,
-  },
-  gradeLabel: {
-    color: '#fff',
-    fontSize: 10,
-    marginTop: 2,
+    fontSize: 14,
     fontFamily: fontFamilies.bodyMedium,
   },
 });

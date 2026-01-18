@@ -4,17 +4,19 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   StyleSheet,
   TextInput,
+  View,
 } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { AmbientBackground } from '@/components/ui/AmbientBackground';
+import { GradientButton } from '@/components/ui/GradientButton';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useTranslations } from '@/hooks/use-translations';
 import { createDeck } from '@/src/lib/decks';
-import { fontFamilies } from '@/constants/theme';
+import { borderRadius, fontFamilies } from '@/constants/theme';
 
 export default function CreateDeckScreen() {
   const router = useRouter();
@@ -51,43 +53,53 @@ export default function CreateDeckScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <ThemedView style={styles.inner}>
-        <ThemedText type="subtitle" style={styles.label}>
-          {t('createDeck.label')}
-        </ThemedText>
-        <TextInput
-          style={[styles.input, { color: textColor, borderColor: inputBorder, backgroundColor: inputBackground }]}
-          value={name}
-          onChangeText={setName}
-          placeholder={t('createDeck.placeholder')}
-          placeholderTextColor={textMuted}
-          autoFocus
-          returnKeyType="done"
-          onSubmitEditing={handleSubmit}
-        />
+        <AmbientBackground intensity="subtle" />
 
-        {error && (
-          <ThemedText style={[styles.error, { color: errorColor }]}>
-            {error}
+        <View style={styles.form}>
+          <ThemedText type="subtitle" style={styles.label}>
+            {t('createDeck.label')}
           </ThemedText>
-        )}
+          <TextInput
+            style={[
+              styles.input,
+              {
+                color: textColor,
+                borderColor: inputBorder,
+                backgroundColor: inputBackground,
+              },
+            ]}
+            value={name}
+            onChangeText={setName}
+            placeholder={t('createDeck.placeholder')}
+            placeholderTextColor={textMuted}
+            autoFocus
+            returnKeyType="done"
+            onSubmitEditing={handleSubmit}
+          />
 
-        <Pressable
-          style={({ pressed }) => [
-            styles.button,
-            { backgroundColor: primaryColor },
-            !isValid && styles.buttonDisabled,
-            pressed && styles.buttonPressed,
-          ]}
-          onPress={handleSubmit}
-          disabled={!isValid || isSubmitting}>
-          {isSubmitting ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <ThemedText style={styles.buttonText}>{t('createDeck.button')}</ThemedText>
+          {error && (
+            <View style={[styles.errorBanner, { backgroundColor: `${errorColor}20` }]}>
+              <ThemedText style={[styles.errorText, { color: errorColor }]}>
+                {error}
+              </ThemedText>
+            </View>
           )}
-        </Pressable>
+
+          {isSubmitting ? (
+            <ActivityIndicator size="large" color={primaryColor} style={styles.loader} />
+          ) : (
+            <GradientButton
+              title={t('createDeck.button')}
+              onPress={handleSubmit}
+              disabled={!isValid}
+              size="lg"
+              style={styles.button}
+            />
+          )}
+        </View>
       </ThemedView>
     </KeyboardAvoidingView>
   );
@@ -99,37 +111,35 @@ const styles = StyleSheet.create({
   },
   inner: {
     flex: 1,
-    padding: 20,
+  },
+  form: {
+    flex: 1,
+    padding: 24,
+    paddingTop: 32,
   },
   label: {
-    marginBottom: 8,
-    marginTop: 16,
+    marginBottom: 12,
   },
   input: {
-    borderWidth: 2,
-    borderRadius: 6,
-    padding: 12,
+    borderWidth: 1,
+    borderRadius: borderRadius.lg,
+    padding: 16,
     fontSize: 16,
+    fontFamily: fontFamilies.body,
   },
-  error: {
-    marginTop: 16,
+  errorBanner: {
+    marginTop: 20,
+    padding: 12,
+    borderRadius: borderRadius.md,
+  },
+  errorText: {
     textAlign: 'center',
+    fontFamily: fontFamilies.bodyMedium,
   },
   button: {
-    paddingVertical: 14,
-    borderRadius: 6,
-    alignItems: 'center',
-    marginTop: 24,
+    marginTop: 32,
   },
-  buttonPressed: {
-    opacity: 0.8,
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontFamily: fontFamilies.bodySemiBold,
+  loader: {
+    marginTop: 32,
   },
 });

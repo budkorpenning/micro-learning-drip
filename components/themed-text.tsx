@@ -6,7 +6,15 @@ import { fontFamilies, typography } from '@/constants/theme';
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
-  type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
+  type?:
+    | 'default'
+    | 'title'
+    | 'defaultSemiBold'
+    | 'subtitle'
+    | 'link'
+    | 'displayLarge'
+    | 'displayMedium'
+    | 'displaySmall';
 };
 
 export function ThemedText({
@@ -28,6 +36,9 @@ export function ThemedText({
         type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
         type === 'subtitle' ? styles.subtitle : undefined,
         type === 'link' ? styles.link : undefined,
+        type === 'displayLarge' ? styles.displayLarge : undefined,
+        type === 'displayMedium' ? styles.displayMedium : undefined,
+        type === 'displaySmall' ? styles.displaySmall : undefined,
         style,
       ]}
       {...rest}
@@ -60,5 +71,17 @@ const styles = StyleSheet.create({
   link: {
     ...stripFontWeight(typography.body),
     fontFamily: fontFamilies.bodySemiBold,
+  },
+  displayLarge: {
+    ...stripFontWeight(typography.displayLarge),
+    fontFamily: fontFamilies.headingBold,
+  },
+  displayMedium: {
+    ...stripFontWeight(typography.displayMedium),
+    fontFamily: fontFamilies.headingSemiBold,
+  },
+  displaySmall: {
+    ...stripFontWeight(typography.displaySmall),
+    fontFamily: fontFamilies.headingSemiBold,
   },
 });

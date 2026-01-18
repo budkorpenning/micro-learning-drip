@@ -1,5 +1,6 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Device from 'expo-device';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Localization from 'expo-localization';
 import * as Notifications from 'expo-notifications';
 import { useCallback, useEffect, useState } from 'react';
@@ -15,7 +16,10 @@ import {
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Colors, fontFamilies } from '@/constants/theme';
+import { AmbientBackground } from '@/components/ui/AmbientBackground';
+import { Card } from '@/components/ui/Card';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { borderRadius, Colors, fontFamilies, gradient, ratingColors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTranslations } from '@/hooks/use-translations';
 import { useAuth } from '@/src/context/AuthContext';
@@ -51,9 +55,6 @@ export default function SettingsScreen() {
   const errorColor = colors.error;
   const successColor = colors.success;
   const warningColor = colors.warning;
-  const surfaceColor = colors.surfaceElevated1;
-  const errorBannerBackground =
-    colorScheme === 'dark' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.08)';
 
   // Profile state
   const [profile, setProfile] = useState<ProfileSettings | null>(null);
@@ -147,12 +148,12 @@ export default function SettingsScreen() {
   );
 
   // Handlers
-  function handleThemeChange(newTheme: ThemePreference) {
-    setThemePreference(newTheme);
+  function handleThemeChange(value: string) {
+    setThemePreference(value as ThemePreference);
   }
 
-  function handleLanguageChange(nextLanguage: SupportedLanguage) {
-    updateSetting('language', nextLanguage);
+  function handleLanguageChange(nextLanguage: string) {
+    updateSetting('language', nextLanguage as SupportedLanguage);
   }
 
   function handleNotificationsToggle(value: boolean) {
@@ -192,16 +193,23 @@ export default function SettingsScreen() {
   if (isLoading) {
     return (
       <ThemedView style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.tint} />
+        <AmbientBackground intensity="subtle" />
+        <ActivityIndicator size="large" color={primaryColor} />
       </ThemedView>
     );
   }
 
   return (
     <ThemedView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <AmbientBackground intensity="subtle" />
+
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {error && (
-          <View style={[styles.errorBanner, { backgroundColor: errorBannerBackground }]}>
+          <View style={[styles.errorBanner, { backgroundColor: `${errorColor}20` }]}>
             <ThemedText style={[styles.errorText, { color: errorColor }]}>
               {error}
             </ThemedText>
@@ -213,61 +221,32 @@ export default function SettingsScreen() {
           <ThemedText type="subtitle" style={styles.sectionTitle}>
             {t('settings.titleAppearance')}
           </ThemedText>
-          <View
-            style={[
-              styles.card,
-              { backgroundColor: surfaceColor, borderColor: colors.cardBorder },
-            ]}>
+          <Card>
             <ThemedText style={styles.label}>{t('settings.themeLabel')}</ThemedText>
-            <View style={[styles.segmentedControl, { borderColor: colors.borderSecondary }]}>
-              {(['system', 'light', 'dark'] as const).map((option) => (
-                <Pressable
-                  key={option}
-                  style={[
-                    styles.segment,
-                    themePreference === option && { backgroundColor: primaryColor },
-                  ]}
-                  onPress={() => handleThemeChange(option)}>
-                  <ThemedText
-                    style={[
-                      styles.segmentText,
-                      themePreference === option && styles.segmentTextActive,
-                    ]}
-                    lightColor={themePreference === option ? '#fff' : undefined}
-                    darkColor={themePreference === option ? '#fff' : undefined}>
-                    {t(`settings.theme.${option}` as const)}
-                  </ThemedText>
-                </Pressable>
-              ))}
-            </View>
+            <SegmentedControl
+              options={[
+                { value: 'system', label: t('settings.theme.system') },
+                { value: 'light', label: t('settings.theme.light') },
+                { value: 'dark', label: t('settings.theme.dark') },
+              ]}
+              selected={themePreference}
+              onSelect={handleThemeChange}
+              style={styles.segmentControl}
+            />
 
             <View style={styles.controlGroup}>
               <ThemedText style={styles.label}>{t('settings.languageLabel')}</ThemedText>
-              <View style={[styles.segmentedControl, { borderColor: colors.borderSecondary }]}>
-                {(['en', 'sv'] as const).map((option) => (
-                  <Pressable
-                    key={option}
-                    style={[
-                      styles.segment,
-                      selectedLanguage === option && { backgroundColor: primaryColor },
-                    ]}
-                    onPress={() => handleLanguageChange(option)}>
-                    <ThemedText
-                      style={[
-                        styles.segmentText,
-                        selectedLanguage === option && styles.segmentTextActive,
-                      ]}
-                      lightColor={selectedLanguage === option ? '#fff' : undefined}
-                      darkColor={selectedLanguage === option ? '#fff' : undefined}>
-                      {option === 'en'
-                        ? t('settings.language.english')
-                        : t('settings.language.swedish')}
-                    </ThemedText>
-                  </Pressable>
-                ))}
-              </View>
+              <SegmentedControl
+                options={[
+                  { value: 'en', label: t('settings.language.english') },
+                  { value: 'sv', label: t('settings.language.swedish') },
+                ]}
+                selected={selectedLanguage}
+                onSelect={handleLanguageChange}
+                style={styles.segmentControl}
+              />
             </View>
-          </View>
+          </Card>
         </View>
 
         {/* Reminders Section */}
@@ -275,11 +254,7 @@ export default function SettingsScreen() {
           <ThemedText type="subtitle" style={styles.sectionTitle}>
             {t('settings.titleReminders')}
           </ThemedText>
-          <View
-            style={[
-              styles.card,
-              { backgroundColor: surfaceColor, borderColor: colors.cardBorder },
-            ]}>
+          <Card>
             {/* Notifications toggle */}
             <View style={styles.row}>
               <ThemedText style={styles.label}>{t('settings.notifications')}</ThemedText>
@@ -287,19 +262,18 @@ export default function SettingsScreen() {
                 value={profile?.notifications_enabled ?? true}
                 onValueChange={handleNotificationsToggle}
                 trackColor={{ false: colors.borderSecondary, true: primaryColor }}
-                thumbColor={
-                  profile?.notifications_enabled ? '#fff' : colors.surfaceElevated2
-                }
+                thumbColor="#ffffff"
               />
             </View>
 
             {/* Daily time picker */}
-            <View style={styles.row}>
+            <View style={[styles.row, { borderTopColor: colors.borderSecondary }]}>
               <ThemedText style={styles.label}>{t('settings.dailyReminder')}</ThemedText>
               <Pressable
-                style={[styles.timeButton, { borderColor: colors.inputBorder }]}
-                onPress={() => setShowTimePicker(true)}>
-                <ThemedText>
+                style={[styles.timeButton, { borderColor: colors.borderSecondary }]}
+                onPress={() => setShowTimePicker(true)}
+              >
+                <ThemedText style={styles.timeText}>
                   {profile ? formatTimeForDisplay(profile.daily_time) : '--:--'}
                 </ThemedText>
               </Pressable>
@@ -322,22 +296,23 @@ export default function SettingsScreen() {
             )}
 
             {/* Timezone */}
-            <View style={styles.row}>
+            <View style={[styles.row, { borderTopColor: colors.borderSecondary }]}>
               <View style={styles.timezoneInfo}>
                 <ThemedText style={styles.label}>{t('settings.timezone')}</ThemedText>
-                <ThemedText style={styles.timezoneValue}>
+                <ThemedText style={[styles.timezoneValue, { color: colors.textSecondary }]}>
                   {profile?.timezone ?? 'UTC'}
                 </ThemedText>
               </View>
               <Pressable
                 style={[styles.smallButton, { borderColor: primaryColor }]}
-                onPress={handleUpdateTimezone}>
-                <ThemedText style={{ color: primaryColor, fontSize: 13 }}>
+                onPress={handleUpdateTimezone}
+              >
+                <ThemedText style={[styles.smallButtonText, { color: primaryColor }]}>
                   {t('settings.useDevice')}
                 </ThemedText>
               </Pressable>
             </View>
-          </View>
+          </Card>
         </View>
 
         {/* Diagnostics Section (DEV only) */}
@@ -346,16 +321,12 @@ export default function SettingsScreen() {
             <ThemedText type="subtitle" style={styles.sectionTitle}>
               {t('settings.titleDiagnostics')}
             </ThemedText>
-            <View
-              style={[
-                styles.card,
-                { backgroundColor: surfaceColor, borderColor: colors.cardBorder },
-              ]}>
+            <Card>
               <View style={styles.row}>
                 <ThemedText style={styles.label}>
                   {t('settings.diagnostics.pushPermission')}
                 </ThemedText>
-                <ThemedText
+                <View
                   style={[
                     styles.statusBadge,
                     {
@@ -364,43 +335,52 @@ export default function SettingsScreen() {
                           ? successColor
                           : errorColor,
                     },
-                  ]}>
-                  {diagnostics.permissionStatus}
-                </ThemedText>
+                  ]}
+                >
+                  <ThemedText style={styles.statusText}>
+                    {diagnostics.permissionStatus}
+                  </ThemedText>
+                </View>
               </View>
-              <View style={styles.row}>
+              <View style={[styles.row, { borderTopColor: colors.borderSecondary }]}>
                 <ThemedText style={styles.label}>
                   {t('settings.diagnostics.deviceToken')}
                 </ThemedText>
-                <ThemedText
+                <View
                   style={[
                     styles.statusBadge,
                     {
                       backgroundColor: diagnostics.hasToken ? successColor : errorColor,
                     },
-                  ]}>
-                  {diagnostics.hasToken
-                    ? `${t('settings.diagnostics.yes')} (${diagnostics.tokenCount})`
-                    : t('settings.diagnostics.no')}
-                </ThemedText>
+                  ]}
+                >
+                  <ThemedText style={styles.statusText}>
+                    {diagnostics.hasToken
+                      ? `${t('settings.diagnostics.yes')} (${diagnostics.tokenCount})`
+                      : t('settings.diagnostics.no')}
+                  </ThemedText>
+                </View>
               </View>
-              <View style={styles.row}>
+              <View style={[styles.row, { borderTopColor: colors.borderSecondary }]}>
                 <ThemedText style={styles.label}>
                   {t('settings.diagnostics.physicalDevice')}
                 </ThemedText>
-                <ThemedText
+                <View
                   style={[
                     styles.statusBadge,
                     {
                       backgroundColor: Device.isDevice ? successColor : warningColor,
                     },
-                  ]}>
-                  {Device.isDevice
-                    ? t('settings.diagnostics.yes')
-                    : t('settings.diagnostics.simulator')}
-                </ThemedText>
+                  ]}
+                >
+                  <ThemedText style={styles.statusText}>
+                    {Device.isDevice
+                      ? t('settings.diagnostics.yes')
+                      : t('settings.diagnostics.simulator')}
+                  </ThemedText>
+                </View>
               </View>
-            </View>
+            </Card>
           </View>
         )}
 
@@ -409,27 +389,32 @@ export default function SettingsScreen() {
           <ThemedText type="subtitle" style={styles.sectionTitle}>
             {t('settings.titleAccount')}
           </ThemedText>
-          <View
-            style={[
-              styles.card,
-              { backgroundColor: surfaceColor, borderColor: colors.cardBorder },
-            ]}>
+          <Card>
             {user && (
-              <ThemedText style={styles.email}>{user.email}</ThemedText>
+              <ThemedText style={[styles.email, { color: colors.textSecondary }]}>
+                {user.email}
+              </ThemedText>
             )}
             <Pressable
               style={({ pressed }) => [
                 styles.signOutButton,
-                { borderColor: errorColor },
                 pressed && styles.buttonPressed,
               ]}
               onPress={handleSignOut}
-              disabled={isSigningOut}>
-              <ThemedText style={[styles.signOutText, { color: errorColor }]}>
-                {isSigningOut ? t('settings.signingOut') : t('settings.signOut')}
-              </ThemedText>
+              disabled={isSigningOut}
+            >
+              <LinearGradient
+                colors={ratingColors.forgot.colors}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.signOutGradient}
+              >
+                <ThemedText style={styles.signOutText}>
+                  {isSigningOut ? t('settings.signingOut') : t('settings.signOut')}
+                </ThemedText>
+              </LinearGradient>
             </Pressable>
-          </View>
+          </Card>
         </View>
       </ScrollView>
     </ThemedView>
@@ -445,119 +430,109 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  scroll: {
+    flex: 1,
+  },
   scrollContent: {
-    padding: 16,
+    padding: 20,
     paddingBottom: 40,
   },
   section: {
     marginBottom: 24,
   },
   sectionTitle: {
-    marginBottom: 8,
+    marginBottom: 12,
     marginLeft: 4,
-  },
-  card: {
-    borderRadius: 8,
-    borderWidth: 2,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(128, 128, 128, 0.2)',
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderTopColor: 'transparent',
   },
   label: {
     fontSize: 16,
     fontFamily: fontFamilies.bodyMedium,
   },
-  segmentedControl: {
-    flexDirection: 'row',
+  segmentControl: {
     marginTop: 12,
-    borderRadius: 8,
-    overflow: 'hidden',
-    borderWidth: 2,
   },
   controlGroup: {
-    marginTop: 16,
-  },
-  segment: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  segmentText: {
-    fontSize: 14,
-    fontFamily: fontFamilies.bodyMedium,
-  },
-  segmentTextActive: {
-    fontFamily: fontFamilies.bodySemiBold,
+    marginTop: 20,
   },
   timeButton: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-    borderWidth: 2,
+    paddingVertical: 10,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+  },
+  timeText: {
+    fontFamily: fontFamilies.bodyMedium,
   },
   timezoneInfo: {
     flex: 1,
   },
   timezoneValue: {
     fontSize: 13,
-    opacity: 0.7,
-    marginTop: 2,
+    marginTop: 4,
     fontFamily: fontFamilies.bodyMedium,
   },
   smallButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    borderWidth: 2,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+  },
+  smallButtonText: {
+    fontSize: 13,
+    fontFamily: fontFamilies.bodyMedium,
   },
   statusBadge: {
-    color: '#fff',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: borderRadius.sm,
+  },
+  statusText: {
+    color: '#ffffff',
     fontSize: 12,
     fontFamily: fontFamilies.bodySemiBold,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    overflow: 'hidden',
   },
   email: {
-    opacity: 0.7,
-    marginBottom: 12,
+    marginBottom: 16,
     fontFamily: fontFamilies.bodyMedium,
   },
   signOutButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 6,
-    borderWidth: 2,
-    alignItems: 'center',
+    borderRadius: borderRadius.lg,
+    overflow: 'hidden',
   },
   buttonPressed: {
-    opacity: 0.6,
+    opacity: 0.8,
+  },
+  signOutGradient: {
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderRadius: borderRadius.lg,
   },
   signOutText: {
+    color: '#ffffff',
     fontFamily: fontFamilies.bodySemiBold,
+    fontSize: 16,
   },
   link: {
     textAlign: 'center',
     marginTop: 8,
+    fontFamily: fontFamilies.bodyMedium,
   },
   errorBanner: {
-    borderRadius: 8,
     padding: 12,
+    borderRadius: borderRadius.md,
     marginBottom: 16,
   },
   errorText: {
     textAlign: 'center',
+    fontFamily: fontFamilies.bodyMedium,
   },
 });

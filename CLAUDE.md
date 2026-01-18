@@ -64,7 +64,7 @@ Tables:
 All tables must enforce user isolation with Supabase RLS.
 Deck ownership is enforced via both RLS policy and trigger (defense-in-depth).
 
-## Progress (as of 2026-01-17)
+## Progress (as of 2026-01-18)
 
 ### Completed
 - [x] Navigation scaffold (4 tabs: Today, Library, Stats, Settings)
@@ -84,11 +84,15 @@ Deck ownership is enforced via both RLS policy and trigger (defense-in-depth).
 - [x] Flashcard UI: Question/Answer terminology, reveal behavior on Review screen
 - [x] Decks: cards organized into decks, Library shows decks, deck detail shows cards
 - [x] Deck archiving: archive/unarchive decks, syncs all cards, UI reflects archived state
+- [x] GUI redesign: new design system with cyan→teal→emerald gradient branding
+- [x] New UI components: GradientButton, Card, GradientText, RatingButton, AmbientBackground, SegmentedControl
+- [x] i18n: English and Swedish translations
+- [x] Android fix: disabled entry animations to fix shadow rendering issues
 
 ### Tags
 - v0.1.0: Navigation scaffold complete
 - v0.2.0: Sprint 01 complete (Auth + Items CRUD)
-- Current: 58aba0b (Decks feature complete)
+- Current: ca7df65 (GUI redesign complete)
 
 ### Next Steps
 1. **Development build** — Required for testing push notifications on physical device
@@ -114,9 +118,17 @@ src/lib/scheduling.ts    # Pure scheduling logic (4 grades)
 src/lib/stats.ts         # Stats data fetching (streak, weekly activity)
 src/lib/notifications.ts # Push notification token registration
 src/lib/settings.ts      # Profile settings CRUD
+src/lib/i18n.ts          # Translations (English, Swedish)
 src/types/database.ts    # TypeScript types for DB
 src/context/AuthContext.tsx  # Auth state management (+ notification registration)
 src/context/ThemeContext.tsx # Theme preference (System/Light/Dark)
+constants/theme.ts       # Design system (colors, gradients, typography, shadows)
+components/ui/GradientButton.tsx   # Primary action button with brand gradient
+components/ui/Card.tsx             # Card with optional glow effect
+components/ui/GradientText.tsx     # Text with gradient fill (MaskedView)
+components/ui/RatingButton.tsx     # Colored rating buttons (1-4)
+components/ui/AmbientBackground.tsx # Blurred gradient orbs background
+components/ui/SegmentedControl.tsx  # Tab-style selector with gradient active state
 app/(tabs)/index.tsx     # Today screen (all due cards across decks)
 app/(tabs)/library.tsx   # Library screen (shows decks)
 app/(tabs)/stats.tsx     # Stats screen
@@ -141,6 +153,8 @@ supabase/functions/send-daily-reminder/index.ts  # Edge Function
 - Custom scheme `microlearningdrip://` only works in dev/prod builds, not Expo Go
 - Run with: `npx expo start -c --tunnel`
 - Push notifications require physical device + development build (not Expo Go)
+- Android: Entry animations disabled due to shadow rendering issues during animation (iOS only)
+- AmbientBackground: Animated orbs on iOS, static orbs on Android
 
 ### Push Notifications Setup (COMPLETED 2026-01-16)
 All steps below have been completed for project `wjlxpksvagrnwajgpgpn`:

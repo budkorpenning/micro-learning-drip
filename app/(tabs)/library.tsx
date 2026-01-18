@@ -12,7 +12,7 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { listDecks } from '@/src/lib/decks';
+import { listDecks, setDeckArchived } from '@/src/lib/decks';
 import type { DeckWithCount } from '@/src/types/database';
 
 export default function LibraryScreen() {
@@ -21,15 +21,18 @@ export default function LibraryScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
 
   const borderColor = useThemeColor({ light: '#ddd', dark: '#333' }, 'text');
+  const segmentBg = useThemeColor({ light: '#eee', dark: '#222' }, 'background');
+  const activeSegmentBg = useThemeColor({ light: '#fff', dark: '#444' }, 'background');
 
-  const fetchDecks = useCallback(async (showLoading = true) => {
+  const fetchDecks = useCallback(async (archived: boolean, showLoading = true) => {
     if (showLoading) setIsLoading(true);
     setError(null);
 
     try {
-      const data = await listDecks();
+      const data = await listDecks({ archived });
       setDecks(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load decks');
@@ -42,34 +45,60 @@ export default function LibraryScreen() {
   // Refresh when screen comes into focus (e.g., after creating a deck)
   useFocusEffect(
     useCallback(() => {
-      fetchDecks();
-    }, [fetchDecks])
+      fetchDecks(showArchived);
+    }, [fetchDecks, showArchived])
   );
 
   function handleRefresh() {
     setIsRefreshing(true);
-    fetchDecks(false);
+    fetchDecks(showArchived, false);
+  }
+
+  async function handleDeckArchiveToggle(deck: DeckWithCount) {
+    try {
+      await setDeckArchived(deck.id, !deck.archived);
+      setDecks((prev) => prev.filter((d) => d.id !== deck.id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update deck');
+    }
+  }
+
+  function handleSegmentChange(archived: boolean) {
+    if (archived === showArchived) return;
+    setShowArchived(archived);
+    fetchDecks(archived);
   }
 
   function renderDeck({ item }: { item: DeckWithCount }) {
     return (
-      <Pressable
-        style={({ pressed }) => [
-          styles.deckCard,
-          { borderColor },
-          pressed && styles.deckCardPressed,
-        ]}
-        onPress={() => router.push(`/deck/${item.id}` as never)}>
-        <View style={styles.deckContent}>
-          <ThemedText type="defaultSemiBold" numberOfLines={1}>
-            {item.name}
+      <View style={[styles.deckCard, { borderColor }]}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.deckMain,
+            pressed && styles.deckMainPressed,
+          ]}
+          onPress={() => router.push(`/deck/${item.id}` as never)}>
+          <View style={styles.deckContent}>
+            <ThemedText type="defaultSemiBold" numberOfLines={1}>
+              {item.name}
+            </ThemedText>
+            <ThemedText style={styles.cardCount}>
+              {item.card_count} {item.card_count === 1 ? 'card' : 'cards'}
+            </ThemedText>
+          </View>
+          <ThemedText style={styles.chevron}>›</ThemedText>
+        </Pressable>
+        <Pressable
+          style={({ pressed }) => [
+            styles.archiveButton,
+            pressed && styles.buttonPressed,
+          ]}
+          onPress={() => handleDeckArchiveToggle(item)}>
+          <ThemedText style={styles.archiveButtonText}>
+            {item.archived ? 'Unarchive' : 'Archive'}
           </ThemedText>
-          <ThemedText style={styles.cardCount}>
-            {item.card_count} {item.card_count === 1 ? 'card' : 'cards'}
-          </ThemedText>
-        </View>
-        <ThemedText style={styles.chevron}>›</ThemedText>
-      </Pressable>
+        </Pressable>
+      </View>
     );
   }
 
@@ -78,11 +107,13 @@ export default function LibraryScreen() {
     return (
       <View style={styles.emptyContainer}>
         <ThemedText style={styles.emptyText}>
-          Create your first deck
+          {showArchived ? 'No archived decks' : 'Create your first deck'}
         </ThemedText>
-        <ThemedText style={styles.emptySubtext}>
-          Tap + to get started
-        </ThemedText>
+        {!showArchived && (
+          <ThemedText style={styles.emptySubtext}>
+            Tap + to get started
+          </ThemedText>
+        )}
       </View>
     );
   }
@@ -92,6 +123,30 @@ export default function LibraryScreen() {
       {error && (
         <ThemedText style={styles.error}>{error}</ThemedText>
       )}
+
+      {/* Segmented control for active/archived decks */}
+      <View style={[styles.segmentContainer, { backgroundColor: segmentBg }]}>
+        <Pressable
+          style={[
+            styles.segment,
+            !showArchived && [styles.segmentActive, { backgroundColor: activeSegmentBg }],
+          ]}
+          onPress={() => handleSegmentChange(false)}>
+          <ThemedText style={!showArchived ? styles.segmentTextActive : styles.segmentText}>
+            Active
+          </ThemedText>
+        </Pressable>
+        <Pressable
+          style={[
+            styles.segment,
+            showArchived && [styles.segmentActive, { backgroundColor: activeSegmentBg }],
+          ]}
+          onPress={() => handleSegmentChange(true)}>
+          <ThemedText style={showArchived ? styles.segmentTextActive : styles.segmentText}>
+            Archived
+          </ThemedText>
+        </Pressable>
+      </View>
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
@@ -111,14 +166,16 @@ export default function LibraryScreen() {
       )}
 
       {/* Add deck button */}
-      <Pressable
-        style={({ pressed }) => [
-          styles.addButton,
-          pressed && styles.addButtonPressed,
-        ]}
-        onPress={() => router.push('/create-deck' as never)}>
-        <ThemedText style={styles.addButtonText}>+</ThemedText>
-      </Pressable>
+      {!showArchived && (
+        <Pressable
+          style={({ pressed }) => [
+            styles.addButton,
+            pressed && styles.addButtonPressed,
+          ]}
+          onPress={() => router.push('/create-deck' as never)}>
+          <ThemedText style={styles.addButtonText}>+</ThemedText>
+        </Pressable>
+      )}
     </ThemedView>
   );
 }
@@ -132,6 +189,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  segmentContainer: {
+    flexDirection: 'row',
+    margin: 16,
+    marginBottom: 0,
+    borderRadius: 8,
+    padding: 4,
+  },
+  segment: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: 6,
+  },
+  segmentActive: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  segmentText: {
+    opacity: 0.6,
+  },
+  segmentTextActive: {
+    fontWeight: '600',
+  },
   listContent: {
     padding: 16,
     flexGrow: 1,
@@ -139,12 +222,18 @@ const styles = StyleSheet.create({
   deckCard: {
     borderWidth: 1,
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
     marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
   },
-  deckCardPressed: {
+  deckMain: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  deckMainPressed: {
     opacity: 0.7,
   },
   deckContent: {
@@ -159,6 +248,19 @@ const styles = StyleSheet.create({
     fontSize: 24,
     opacity: 0.4,
     marginLeft: 8,
+  },
+  archiveButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#888',
+  },
+  buttonPressed: {
+    opacity: 0.6,
+  },
+  archiveButtonText: {
+    fontSize: 12,
   },
   emptyContainer: {
     flex: 1,

@@ -40,6 +40,7 @@ This command will move the starter code to the **app-example** directory and cre
 If you update the Supabase schema, run the latest patch in the Supabase SQL Editor.
 
 - `supabase/patch-005-review-rating-1-4.sql` migrates review ratings from 1-5 to 1-4.
+- `supabase/patch-006-archive-decks.sql` adds deck archiving.
 
 ## Learn more
 

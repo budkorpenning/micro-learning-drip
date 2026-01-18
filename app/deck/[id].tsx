@@ -13,7 +13,7 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import { getDeck, deleteDeck } from '@/src/lib/decks';
+import { getDeck, deleteDeck, setDeckArchived } from '@/src/lib/decks';
 import { listItemsByDeck, setItemArchived } from '@/src/lib/items';
 import type { Deck, Item } from '@/src/types/database';
 
@@ -42,6 +42,9 @@ export default function DeckDetailScreen() {
         listItemsByDeck(id, { archived: showArchived }),
       ]);
       setDeck(deckData);
+      if (deckData.archived && !showArchived) {
+        setShowArchived(true);
+      }
       setItems(itemsData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load deck');
@@ -56,6 +59,7 @@ export default function DeckDetailScreen() {
   }, [fetchData]);
 
   async function handleArchiveToggle(item: Item) {
+    if (deck?.archived) return;
     try {
       await setItemArchived(item.id, !item.archived);
       setItems(prev => prev.filter(i => i.id !== item.id));
@@ -91,7 +95,25 @@ export default function DeckDetailScreen() {
     );
   }
 
+  async function handleDeckArchiveToggle() {
+    if (!deck) return;
+    try {
+      await setDeckArchived(deck.id, !deck.archived);
+      setDeck({ ...deck, archived: !deck.archived });
+      fetchData(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update deck');
+    }
+  }
+
   function renderItem({ item }: { item: Item }) {
+    const isDeckArchived = Boolean(deck?.archived);
+    const archiveLabel = isDeckArchived
+      ? 'Deck archived'
+      : item.archived
+        ? 'Unarchive'
+        : 'Archive';
+
     return (
       <View style={[styles.itemCard, { borderColor }]}>
         <View style={styles.itemContent}>
@@ -111,10 +133,12 @@ export default function DeckDetailScreen() {
           style={({ pressed }) => [
             styles.archiveButton,
             pressed && styles.buttonPressed,
+            isDeckArchived && styles.archiveButtonDisabled,
           ]}
-          onPress={() => handleArchiveToggle(item)}>
+          onPress={() => handleArchiveToggle(item)}
+          disabled={isDeckArchived}>
           <ThemedText style={styles.archiveButtonText}>
-            {item.archived ? 'Unarchive' : 'Archive'}
+            {archiveLabel}
           </ThemedText>
         </Pressable>
       </View>
@@ -148,9 +172,18 @@ export default function DeckDetailScreen() {
         options={{
           title: deck?.name ?? 'Deck',
           headerRight: () => (
-            <Pressable onPress={handleDeleteDeck} style={styles.deleteButton}>
-              <ThemedText style={styles.deleteButtonText}>Delete</ThemedText>
-            </Pressable>
+            <View style={styles.headerActions}>
+              {deck && (
+                <Pressable onPress={handleDeckArchiveToggle} style={styles.archiveDeckButton}>
+                  <ThemedText style={styles.archiveDeckButtonText}>
+                    {deck.archived ? 'Unarchive' : 'Archive'}
+                  </ThemedText>
+                </Pressable>
+              )}
+              <Pressable onPress={handleDeleteDeck} style={styles.deleteButton}>
+                <ThemedText style={styles.deleteButtonText}>Delete</ThemedText>
+              </Pressable>
+            </View>
           ),
         }}
       />
@@ -195,7 +228,7 @@ export default function DeckDetailScreen() {
       />
 
       {/* Add button */}
-      {!showArchived && (
+      {!showArchived && !deck?.archived && (
         <Pressable
           style={({ pressed }) => [
             styles.addButton,
@@ -223,6 +256,18 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     color: '#ff4444',
+    fontSize: 16,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  archiveDeckButton: {
+    paddingHorizontal: 8,
+  },
+  archiveDeckButtonText: {
+    color: '#4285F4',
     fontSize: 16,
   },
   segmentContainer: {
@@ -283,6 +328,9 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderWidth: 1,
     borderColor: '#888',
+  },
+  archiveButtonDisabled: {
+    opacity: 0.5,
   },
   buttonPressed: {
     opacity: 0.6,

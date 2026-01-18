@@ -74,7 +74,7 @@ Deck ownership is enforced via both RLS policy and trigger (defense-in-depth).
 - [x] Google Auth via Supabase (expo-auth-session)
 - [x] Items CRUD (create, list, archive/unarchive) in Library tab
 - [x] Auto-create schedule row when item created (due_at=now, interval=1)
-- [x] Today review loop: show due items, 5-grade rating (Again/Hard/Good/Easy/Perfect)
+- [x] Today review loop: show due items, 4-grade rating (Forgot/Hard/Good/Easy)
 - [x] Scheduling logic: pure function in src/lib/scheduling.ts
 - [x] Review persists to reviews table, updates schedule (interval, ease_factor, due_at)
 - [x] Empty state with motivational message + next due item
@@ -106,7 +106,7 @@ src/lib/auth.ts          # Google sign-in/out
 src/lib/decks.ts         # Decks CRUD
 src/lib/items.ts         # Items CRUD (requires deck_id)
 src/lib/today.ts         # Due items, submit review
-src/lib/scheduling.ts    # Pure scheduling logic (5 grades)
+src/lib/scheduling.ts    # Pure scheduling logic (4 grades)
 src/lib/stats.ts         # Stats data fetching (streak, weekly activity)
 src/lib/notifications.ts # Push notification token registration
 src/lib/settings.ts      # Profile settings CRUD
@@ -120,12 +120,13 @@ app/(tabs)/settings.tsx  # Settings screen
 app/create-deck.tsx      # Create deck modal
 app/deck/[id].tsx        # Deck detail screen (cards in deck)
 app/add-item.tsx         # Add card form (requires deckId param)
-app/review.tsx           # Review screen with reveal + 5 grades
+app/review.tsx           # Review screen with reveal + 4 grades
 supabase/schema.sql                   # Initial DB schema
 supabase/patch-001-security.sql       # Security fixes
 supabase/patch-002-notifications.sql  # Notification columns & helper functions
 supabase/patch-003-pgcron.sql         # pg_cron job setup (run manually)
 supabase/patch-004-decks.sql          # Decks table + deck_id on items
+supabase/patch-005-review-rating-1-4.sql  # Migrate rating 5→4, add constraint
 supabase/functions/send-daily-reminder/index.ts  # Edge Function
 ```
 

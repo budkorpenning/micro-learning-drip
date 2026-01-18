@@ -64,6 +64,24 @@ create policy "Users can delete own decks"
 create index decks_user_id_idx on public.decks(user_id);
 create index decks_user_archived_idx on public.decks(user_id, archived);
 
+-- Keep items archived state in sync with the deck
+create or replace function public.sync_items_archived_with_deck()
+returns trigger
+language plpgsql
+as $$
+begin
+  update public.items
+  set archived = new.archived
+  where deck_id = new.id;
+
+  return new;
+end;
+$$;
+
+create trigger trg_decks_sync_items_archived
+  after update of archived on public.decks
+  for each row execute function public.sync_items_archived_with_deck();
+
 -- ============================================
 -- ITEMS
 -- Learning items (flashcards) belonging to a deck

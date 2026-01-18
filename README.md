@@ -41,6 +41,7 @@ If you update the Supabase schema, run the latest patch in the Supabase SQL Edit
 
 - `supabase/patch-005-review-rating-1-4.sql` migrates review ratings from 1-5 to 1-4.
 - `supabase/patch-006-archive-decks.sql` adds deck archiving.
+- `supabase/patch-007-sync-deck-item-archived.sql` syncs item archived state with decks.
 
 ## Learn more
 

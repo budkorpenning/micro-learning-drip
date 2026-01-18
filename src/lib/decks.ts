@@ -131,17 +131,6 @@ export async function deleteDeck(deckId: string): Promise<void> {
  * Set a deck's archived status (and sync all items)
  */
 export async function setDeckArchived(deckId: string, archived: boolean): Promise<void> {
-  if (archived) {
-    const { error: itemsError } = await supabase
-      .from('items')
-      .update({ archived: true } as never)
-      .eq('deck_id', deckId);
-
-    if (itemsError) {
-      throw new Error(`Failed to archive deck items: ${itemsError.message}`);
-    }
-  }
-
   const { error: deckError } = await supabase
     .from('decks')
     .update({ archived } as never)
@@ -149,16 +138,5 @@ export async function setDeckArchived(deckId: string, archived: boolean): Promis
 
   if (deckError) {
     throw new Error(`Failed to ${archived ? 'archive' : 'unarchive'} deck: ${deckError.message}`);
-  }
-
-  if (!archived) {
-    const { error: itemsError } = await supabase
-      .from('items')
-      .update({ archived: false } as never)
-      .eq('deck_id', deckId);
-
-    if (itemsError) {
-      throw new Error(`Failed to unarchive deck items: ${itemsError.message}`);
-    }
   }
 }
